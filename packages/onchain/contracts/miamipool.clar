@@ -46,9 +46,6 @@
 ;; public functions
 
 (define-public (start-prepare-phase)
-    ;; in order for someone to start a prepare phase, these need to be checked
-    ;;   - there is not already a cycle occurring (in prepare or spend phase)
-
     (begin
         (asserts! (is-eq currentPhase IDLE_PHASE_CODE) (err u0))
         (asserts! 
@@ -64,14 +61,27 @@
                 }
             ) 
         (err u0))
+        (var-set latestCycleId (+ (var-get latestCycleId) u1))
         (var-set currentPhase PREPARE_PHASE_CODE)
+        (ok true)
     )
 )
-(define-public (start-spend-phase)
-    ;; in order for someone to start a spend phase, these need to be checked
-    ;;   - there is not already a cycle occurring (in prepare or spend phase)
 
-    (begin expr-1 expr-2)
+(define-public (start-spend-phase)
+    (begin
+        (asserts! (is-eq currentPhase PREPARE_PHASE_CODE) (err u0))
+        (asserts!
+            (map-set
+                { id: (var-get latestCycleId) }
+                {
+                    spendPhaseStartedAt: block-height,
+                    spendPhaseFinishedAt: (+ block-height SPEND_PHASE_PERIOD)
+                }
+            )
+        (err u0))
+        (var-set currentPhase SPEND_PHASE_CODE)
+        (ok true)
+    )
 )
 
 (define-public (contribute-funds)
