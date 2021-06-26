@@ -4,15 +4,19 @@
 ;;      SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66
 ;; as of Bitcoin block #688906 or the common era year 2021
 
-(define-constant idlePhaseCode u0)
-(define-constant preparePhaseCode u1)
-(define-constant spendPhaseCode u2)
+(define-constant IDLE_PHASE_CODE u0)
+(define-constant PREPARE_PHASE_CODE u1)
+(define-constant SPEND_PHASE_CODE u2)
+(define-constant REDEEM_PHASE_CODE u3)
 
 (define-data-var preparePhasePeriod uint u5)
 (define-data-var spendPhasePeriod uint u30)
 
 (define-data-var currentPhase uint u0)
 (define-data-var latestCycleId uint u0)
+
+(define-data-var latestCycleTotalParticipants uint u0)
+(define-data-var latestCycleTotaluStx uint u0)
 
 ;; asteria's address (asteria.btc)
 (define-constant feePrinciple SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66)
@@ -48,13 +52,21 @@
 (define-read-only (get-latest-cycle-id))
 
 (define-read-only (get-latest-cycle-total))
-(define-read-only (get-previous-cycle-total (cycleId uint)))
+(define-read-only (get-previous-cycle-total (cycleId uint))
+    ;; if cycleId is latest cycle fail
+)
 
 (define-read-only (get-latest-cycle-participants))
-(define-read-only (get-previous-cycle-participants (cycleId uint)))
+(define-read-only (get-previous-cycle-participants (cycleId uint))
+    ;; if cycleId is latest cycle fail
+)
 
 (define-read-only (get-latest-cycle-prepare-phase))
-(define-read-only (get-previous-cycle-prepare-phase (cycleId uint)))
+(define-read-only (get-previous-cycle-prepare-phase (cycleId uint))
+    ;; if cycleId is latest cycle fail
+)
 
 (define-read-only (get-latest-cycle-spend-phase))
-(define-read-only (get-previous-cycle-spend-phase (cycleId uint)))
+(define-read-only (get-previous-cycle-spend-phase (cycleId uint))
+    ;; if cycleId is latest cycle fail
+)
