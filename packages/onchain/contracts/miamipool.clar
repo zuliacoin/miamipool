@@ -1,12 +1,21 @@
+;; an automated $miami coin mining pool/dao created by Asteria of the Syvita Guild
+
+;; all rights to this code are reserved for the Stacks address:
+;;      SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66
+;; as of Bitcoin block #688906 or the common era year 2021
+
+(define-constant idlePhaseCode u0)
 (define-constant preparePhaseCode u1)
 (define-constant spendPhaseCode u2)
 
-;; defines the preparation phase
 (define-data-var preparePhasePeriod uint u5)
-;; defines the spend period
 (define-data-var spendPhasePeriod uint u30)
+
 (define-data-var currentPhase uint u0)
 (define-data-var latestCycleId uint u0)
+
+;; asteria's address (asteria.btc)
+(define-constant feePrinciple SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66)
 
 (define-map Cycles
     { id: uint } 
@@ -25,8 +34,13 @@
 
 (define-fungible-token miamipool)
 
-(define-public (initiate-spend-phase))
-(define-public (initiate-prepare-phase))
+(define-public (start-prepare-phase)
+    ;; in order for someone to start a prepare phase, these need to be checked
+    ;;   - there is not already a cycle occurring (in prepare or spend phase)
+
+    (begin expr-1 expr-2)
+)
+(define-public (start-spend-phase))
 
 (define-public (contribute-funds))
 (define-public (redeem-rewards))
