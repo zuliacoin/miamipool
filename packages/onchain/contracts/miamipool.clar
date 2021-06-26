@@ -9,8 +9,8 @@
 (define-constant SPEND_PHASE_CODE u2)
 (define-constant REDEEM_PHASE_CODE u3)
 
-(define-constant PREPARE_PHASE_PERIOD uint u5)
-(define-data-var SPEND_PHASE_PERIOD uint u30)
+(define-constant PREPARE_PHASE_PERIOD u5)
+(define-constant SPEND_PHASE_PERIOD u30)
 
 ;; asteria's address (asteria.btc)
 (define-constant FEE_PRINCIPLE SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66)
@@ -29,6 +29,8 @@
         spendPhaseFinishedAt: uint
     }
 )
+
+(define-map map-name)
 
 ;; where is the original miamiCoinContract
 (define-data-var miamiCoinContract principle SP000000000000000000002Q6VF78)
