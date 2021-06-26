@@ -9,17 +9,14 @@
 (define-constant SPEND_PHASE_CODE u2)
 (define-constant REDEEM_PHASE_CODE u3)
 
+(define-constant PREPARE_PHASE_PERIOD uint u5)
+(define-data-var SPEND_PHASE_PERIOD uint u30)
+
 ;; asteria's address (asteria.btc)
 (define-constant FEE_PRINCIPLE SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66)
 
-(define-data-var preparePhasePeriod uint u5)
-(define-data-var spendPhasePeriod uint u30)
-
 (define-data-var currentPhase uint u0)
 (define-data-var latestCycleId uint u0)
-
-(define-data-var latestCycleTotalParticipants uint u0)
-(define-data-var latestCycleTotaluStx uint u0)
 
 (define-map Cycles
     { id: uint } 
@@ -44,29 +41,33 @@
 
     (begin expr-1 expr-2)
 )
-(define-public (start-spend-phase))
+(define-public (start-spend-phase)
+    ;; in order for someone to start a spend phase, these need to be checked
+    ;;   - there is not already a cycle occurring (in prepare or spend phase)
 
-(define-public (contribute-funds))
-(define-public (redeem-rewards))
-
-(define-read-only (get-latest-cycle-id))
-
-(define-read-only (get-latest-cycle-total))
-(define-read-only (get-previous-cycle-total (cycleId uint))
-    ;; if cycleId is latest cycle fail
+    (begin expr-1 expr-2)
 )
 
-(define-read-only (get-latest-cycle-participants))
-(define-read-only (get-previous-cycle-participants (cycleId uint))
-    ;; if cycleId is latest cycle fail
+(define-public (contribute-funds)
+    (begin
+        ;; in order for someone to contribute funds, a current cycle has to be active
+        ;; and to be in the prepare phase
+        (asserts! (is-eq currentPhase PREPARE_PHASE_CODE) (err u0))
+    )
+)
+(define-public (redeem-rewards (cycleId uint)))
+
+(define-read-only (get-latest-cycle-id)
+    (ok latestCycleId)
 )
 
-(define-read-only (get-latest-cycle-prepare-phase))
-(define-read-only (get-previous-cycle-prepare-phase (cycleId uint))
-    ;; if cycleId is latest cycle fail
+(define-read-only (get-latest-cycle)
+    (ok (map-get? Cycles latestCycleId))
 )
 
-(define-read-only (get-latest-cycle-spend-phase))
-(define-read-only (get-previous-cycle-spend-phase (cycleId uint))
-    ;; if cycleId is latest cycle fail
+(define-read-only (get-previous-cycle (cycleId uint))
+    (begin
+        ;; if cycleId is latest cycle fail
+        (asserts! (not (is-eq cycleId latestCycleId)) (err u0))
+    )
 )
