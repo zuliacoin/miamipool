@@ -4,6 +4,10 @@
 ;;      SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66
 ;; as of Bitcoin block #688906 or the common era year 2021
 
+;; error codes
+
+;; constants
+
 (define-constant IDLE_PHASE_CODE u0)
 (define-constant PREPARE_PHASE_CODE u1)
 (define-constant SPEND_PHASE_CODE u2)
@@ -14,6 +18,8 @@
 
 ;; asteria's address (asteria.btc)
 (define-constant FEE_PRINCIPLE SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66)
+
+;; non-constants
 
 (define-data-var currentPhase uint u0)
 (define-data-var latestCycleId uint u0)
@@ -30,18 +36,36 @@
     }
 )
 
-(define-map map-name)
-
 ;; where is the original miamiCoinContract
 (define-data-var miamiCoinContract principle SP000000000000000000002Q6VF78)
 
+;; token
+
 (define-fungible-token miamipool)
+
+;; public functions
 
 (define-public (start-prepare-phase)
     ;; in order for someone to start a prepare phase, these need to be checked
     ;;   - there is not already a cycle occurring (in prepare or spend phase)
 
-    (begin expr-1 expr-2)
+    (begin
+        (asserts! (is-eq currentPhase IDLE_PHASE_CODE) (err u0))
+        (asserts! 
+            (map-insert
+                { id: (+ (var-get latestCycleId) u1) }
+                {
+                    totalParticipants: u0,
+                    totaluStxSpent: u0,
+                    preparePhaseStartedAt: block-height,
+                    spendPhaseStartedAt: u0,
+                    preparePhaseFinishedAt: (+ block-height PREPARE_PHASE_PERIOD),
+                    spendPhaseFinishedAt: u0
+                }
+            ) 
+        (err u0))
+        (var-set currentPhase PREPARE_PHASE_CODE)
+    )
 )
 (define-public (start-spend-phase)
     ;; in order for someone to start a spend phase, these need to be checked
@@ -57,7 +81,9 @@
         (asserts! (is-eq currentPhase PREPARE_PHASE_CODE) (err u0))
     )
 )
-(define-public (redeem-rewards (cycleId uint)))
+(define-public (redeem-rewards))
+
+;; read-only functions
 
 (define-read-only (get-latest-cycle-id)
     (ok latestCycleId)
