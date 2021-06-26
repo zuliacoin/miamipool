@@ -9,6 +9,9 @@
 (define-constant SPEND_PHASE_CODE u2)
 (define-constant REDEEM_PHASE_CODE u3)
 
+;; asteria's address (asteria.btc)
+(define-constant FEE_PRINCIPLE SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66)
+
 (define-data-var preparePhasePeriod uint u5)
 (define-data-var spendPhasePeriod uint u30)
 
@@ -17,9 +20,6 @@
 
 (define-data-var latestCycleTotalParticipants uint u0)
 (define-data-var latestCycleTotaluStx uint u0)
-
-;; asteria's address (asteria.btc)
-(define-constant feePrinciple SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66)
 
 (define-map Cycles
     { id: uint } 
