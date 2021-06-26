@@ -84,11 +84,14 @@
     )
 )
 
-(define-public (contribute-funds)
+(define-public (contribute-funds (amount uint))
     (begin
-        ;; in order for someone to contribute funds, a current cycle has to be active
-        ;; and to be in the prepare phase
         (asserts! (is-eq currentPhase PREPARE_PHASE_CODE) (err u0))
+        (asserts! 
+            (unwrap! 
+                (stx-transfer? amount contract-caller (as-contract tx-sender))
+            ) 
+        (err u0))
     )
 )
 (define-public (redeem-rewards))
