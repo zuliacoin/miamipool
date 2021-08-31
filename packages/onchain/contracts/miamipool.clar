@@ -1,4 +1,4 @@
-;; an automated $miami coin mining pool/dao created by Asteria of the Syvita Guild
+;; an automated MiamiCoin mining pool/dao created by Asteria of the Syvita Guild
 
 ;; all rights to this code are reserved for the Stacks address:
 ;;      SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66
@@ -39,7 +39,7 @@
 ;; MAINNET: SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27
 ;; TESTNET: ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A
 
-(define-data-var miamiCoinContract principle 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A)
+(define-constant miamiCoinContract 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A)
 
 ;; token
 
@@ -47,9 +47,10 @@
 
 (define-public (start-prepare-phase)
     (begin
-        (asserts! (is-eq currentPhase IDLE_PHASE_CODE) (err u0))
+        (asserts! (is-eq (var-get currentPhase) IDLE_PHASE_CODE) (err u0))
         (asserts! 
             (map-insert
+                Cycles
                 { id: (+ (var-get latestCycleId) u1) }
                 {
                     totalParticipants: u0,
@@ -69,12 +70,17 @@
 
 (define-public (start-spend-phase)
     (begin
-        (asserts! (is-eq currentPhase PREPARE_PHASE_CODE) (err u0))
+        (asserts! (is-eq (var-get currentPhase) PREPARE_PHASE_CODE) (err u0))
         (asserts!
             (map-set
+                Cycles
                 { id: (var-get latestCycleId) }
                 {
+                    totalParticipants: (get totalParticipants (unwrap! (map-get? Cycles { id: (var-get latestCycleId) }) (err u0))),
+                    totaluStxSpent: (get totaluStxSpent (unwrap! (map-get? Cycles { id: (var-get latestCycleId) }) (err u0))),
+                    preparePhaseStartedAt: (get preparePhaseStartedAt (unwrap! (map-get? Cycles { id: (var-get latestCycleId) }) (err u0))),
                     spendPhaseStartedAt: block-height,
+                    preparePhaseFinishedAt: (get preparePhaseFinishedAt (unwrap! (map-get? Cycles { id: (var-get latestCycleId) }) (err u0))),
                     spendPhaseFinishedAt: (+ block-height SPEND_PHASE_PERIOD)
                 }
             )
@@ -86,29 +92,38 @@
 
 (define-public (contribute-funds (amount uint))
     (begin
-        (asserts! (is-eq currentPhase PREPARE_PHASE_CODE) (err u0))
+        (asserts! (is-eq (var-get currentPhase) PREPARE_PHASE_CODE) (err u0))
         (asserts! 
             (unwrap! 
                 (stx-transfer? amount contract-caller (as-contract tx-sender))
+                (err u0)
             ) 
-        (err u0))
+            (err u0)
+        )
+        (ok true)
     )
 )
-(define-public (redeem-rewards))
+
+(define-public (redeem-rewards)
+    (ok true)
+)
 
 ;; read-only functions
 
 (define-read-only (get-latest-cycle-id)
-    (ok latestCycleId)
+    (ok (var-get latestCycleId))
 )
 
 (define-read-only (get-latest-cycle)
-    (ok (map-get? Cycles latestCycleId))
+    (ok (map-get? Cycles { id: (var-get latestCycleId) }))
 )
 
 (define-read-only (get-previous-cycle (cycleId uint))
     (begin
         ;; if cycleId is latest cycle fail
-        (asserts! (not (is-eq cycleId latestCycleId)) (err u0))
+        (asserts! (not (is-eq cycleId (var-get latestCycleId))) (err u0))
+        (ok (map-get? Cycles {id: cycleId}))
     )
 )
+
+;; (contract-call? 'ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE.miamipool get-latest-cycle-id)
