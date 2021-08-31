@@ -1,0 +1,2 @@
+#V2
+(contract-call? .miamipool get-latest-cycle-id)

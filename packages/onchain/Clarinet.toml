@@ -1,7 +1,7 @@
-
 [project]
 name = "onchain"
 
-[contracts]
-
-[notebooks]
+[contracts.miamipool]
+]
+path = "contracts/miamipool.clar"
+depends_on = []

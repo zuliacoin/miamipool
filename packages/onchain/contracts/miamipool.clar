@@ -17,7 +17,7 @@
 (define-constant SPEND_PHASE_PERIOD u30)
 
 ;; asteria's address (asteria.btc)
-(define-constant FEE_PRINCIPLE SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66)
+(define-constant FEE_PRINCIPLE 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66)
 
 ;; non-constants
 
@@ -36,12 +36,12 @@
     }
 )
 
-;; where is the original miamiCoinContract
-(define-data-var miamiCoinContract principle SP000000000000000000002Q6VF78)
+;; MAINNET: SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27
+;; TESTNET: ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A
+
+(define-data-var miamiCoinContract principle 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A)
 
 ;; token
-
-(define-fungible-token miamipool)
 
 ;; public functions
 
