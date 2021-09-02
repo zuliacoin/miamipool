@@ -1,11 +1,2 @@
 #V2
-(contract-call? .miamicoin get-latest-cycle)
-(contract-call? .miamicoin get-latest-cycle-id)
-(contract-call? ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE.miamipool get-latest-cycle-id)
-(contract-call? 'ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE.miamipool get-latest-cycle-id)
-(contract-call? .miamicoin get-latest-cycle-id)
-(contract-call? 'ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE.miamipool get-latest-cycle)
-(contract-call? 'ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE.miamipool get-previous-cycle)
-(contract-call? 'ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE.miamipool get-previous-cycle u0)
-(contract-call? 'ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE.miamipool get-previous-cycle u1)
-(contract-call? 'ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE.miamipool get-previous-cycle u2)
+(contract-call? .miamipool add-funds 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66 u1)

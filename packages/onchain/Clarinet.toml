@@ -1,6 +1,6 @@
 [project]
-name = "onchain"
-
+name = "miamipooltest"
+requirements = []
 [contracts.miamipool]
 path = "contracts/miamipool.clar"
 depends_on = []
