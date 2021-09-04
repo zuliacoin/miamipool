@@ -13,11 +13,12 @@
 
 ;; RBAC (1xx)
 (define-constant ERR_INVALID_AMOUNT u100)
-(define-constant ERR_ADDRESS_NOT_FOUND u101)
+(define-constant ERR_ID_NOT_FOUND u101)
 (define-constant ERR_INSUFFICIENT_BALANCE u102)
 
 ;; Mining (2xx)
 (define-constant ERR_CONTRIBUTION_TOO_LOW u200)
+(define-constant ERR_ROUND_NOT_FOUND u201)
 
 
 ;;      ////    CONFIG    \\\\      ;;
@@ -37,8 +38,8 @@
 (define-map Rounds
     { id: uint }
     {
-        totalStx: uint, ;; can we use stx-get-balance to update this instead of adding/subtracting the amount they are adding/withdrawing?
-        participantIds: (list 4096 uint), ;; are we adding an address to this whenever add-funds is called?
+        totalStx: uint,
+        participantIds: (list 4096 uint),
         totalMiaWon: uint,
         blockHeight: uint,
         duration: uint
@@ -54,7 +55,7 @@
 ;; stores up to last 512 rounds a partipant was in
 (define-map Participants
     { id: uint }
-	{ rounds: (list 512 uint) }
+	{ roundsParticipated: (list 512 uint) }
 )
 
 ;; lookup table to get principle from id
@@ -70,7 +71,10 @@
 )
 
 (define-data-var participantIdTip uint u0)
+(define-data-var idToRemove uint u0)
+
 (define-data-var lastRoundId uint u0)
+
 
 
 ;;      ////    PRIVATE    \\\\       ;;
@@ -80,6 +84,7 @@
     participantId
     (let
       ((newId (+ u1 (var-get participantIdTip))))
+      (map-set Participants {id: newId} {roundsParticipated: (list)})
       (map-set IdToParticipant {id: newId} {participant: participant})
       (map-set ParticipantToId {participant: participant} {id: newId})
       (var-set participantIdTip newId)
@@ -87,6 +92,11 @@
     )
   )
 )
+
+(define-private (is-not-id (participantId uint))
+  (not (is-eq participantId (var-get idToRemove)))
+)
+
 
 ;; maybe done? needs checking
 (define-private (calculate-return (id uint))
@@ -166,38 +176,94 @@
     )
 )
 
-(define-public (add-funds (amount uint) (round uint))
+(define-public (add-funds (amount uint) (roundId uint))
     (begin
         (asserts! (>= amount (var-get minContribution)) (err ERR_CONTRIBUTION_TOO_LOW))
         (let
             (
                 (user contract-caller)
-                (participantId (get-or-create-participant-id tx-sender))
+                (address tx-sender)
+                (participantId (get-or-create-participant-id address))
+                (participant (unwrap-panic (map-get? Participants {id: participantId})))
+                (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
             )
             (try! (stx-transfer? amount user MIA_CONTRACT_ADDRESS))
-            (ok
-                (match (get amount (map-get? Contributions { id: participantId, round: round })) balance
-                    (map-set Contributions {id: participantId, round: round} {amount: (+ balance amount)})
-                    (map-set Contributions {id: participantId, round: round} {amount: amount})
-                )
+            (match (get amount (map-get? Contributions { id: participantId, round: roundId })) balance
+                (map-set Contributions {id: participantId, round: roundId} {amount: (+ balance amount)})
+                (map-set Contributions {id: participantId, round: roundId} {amount: amount})
             )
+            (map-set Participants {id: participantId}
+                {
+                    roundsParticipated:
+                    (match (index-of (get roundsParticipated participant) roundId) val
+                        (get roundsParticipated participant)
+                        (unwrap-panic (as-max-len? (append (get roundsParticipated participant) roundId) u512))
+                    )
+                }
+            )
+            (map-set Rounds {id: roundId}
+                {
+                    totalStx: (+ (get totalStx rounds) amount),
+                    participantIds: 
+                    (match (index-of (get participantIds rounds) participantId) val
+                        (get participantIds rounds)
+                        (unwrap-panic (as-max-len? (append (get participantIds rounds) participantId) u4096))
+                    ),
+                    totalMiaWon: (get totalMiaWon rounds),
+                    blockHeight: (get blockHeight rounds),
+                    duration: (get duration rounds)
+                }
+            )
+            (ok true)
         )
     )
 )
 
-(define-public (withdraw-funds (amount uint) (round uint))
+(define-public (withdraw-funds (amount uint) (roundId uint))
     (begin
         (let
             (
                 (user contract-caller)
-                (participantId (unwrap-panic (get id (map-get? ParticipantToId { participant: tx-sender }))))
-                (balance (unwrap-panic (get amount (map-get? Contributions { id: participantId, round: round }))))
+                (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
+                (participantId (unwrap! (get id (map-get? ParticipantToId { participant: tx-sender })) (err ERR_ID_NOT_FOUND)))
+                (participant (unwrap-panic (map-get? Participants {id: participantId})))
+                (balance (unwrap-panic (get amount (map-get? Contributions { id: participantId, round: roundId }))))
             )
+            (asserts! (is-some (index-of (get participantIds rounds) participantId)) (err ERR_ID_NOT_FOUND))
             (asserts! (> amount u0) (err ERR_INVALID_AMOUNT))
             (asserts! (<= amount balance) (err ERR_INSUFFICIENT_BALANCE))
 
             (try! (as-contract (stx-transfer? amount MIA_CONTRACT_ADDRESS user)))
-            (ok (map-set Contributions {id: participantId, round: round} {amount: (- balance amount)}))
+            (map-set Contributions {id: participantId, round: roundId} {amount: (- balance amount)})
+            (map-set Participants {id: participantId}
+                {
+                    roundsParticipated:
+                    (if (>= amount balance)
+                        (begin
+                            (var-set idToRemove participantId)
+                            (filter is-not-id (get roundsParticipated participant))
+                        )
+                        (get roundsParticipated participant)
+                    ),
+                }
+            )
+            (map-set Rounds {id: roundId}
+                {
+                    totalStx: (- (get totalStx rounds) amount),
+                    participantIds: 
+                    (if (>= amount balance)
+                        (begin
+                            (var-set idToRemove participantId)
+                            (filter is-not-id (get participantIds rounds))
+                        )
+                        (get participantIds rounds)
+                    ),
+                    totalMiaWon: (get totalMiaWon rounds),
+                    blockHeight: (get blockHeight rounds),
+                    duration: (get duration rounds)
+                }
+            )
+            (ok true)
         )
     )
 )
@@ -237,10 +303,11 @@
 ;; if none, return (ok none) [don't unwrap]
 ;; if valid, return (ok (tuple... )) [requires unwrap]
 (define-read-only (get-round (id uint))
+;; use a match here
     (ok (map-get? Rounds { id: id }))
 )
 
-;; should be done???
+;; done
 (define-read-only (get-current-phase)
     (if (round-expired (var-get lastRoundId))
         ;; 0: idle, no round is active
