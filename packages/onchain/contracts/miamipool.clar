@@ -19,12 +19,21 @@
 ;; Mining (2xx)
 (define-constant ERR_CONTRIBUTION_TOO_LOW u200)
 (define-constant ERR_ROUND_NOT_FOUND u201)
+(define-constant ERR_ROUND_STILL_ACTIVE u202)
+(define-constant ERR_MINE_TOTAL_NOT_BALANCE_TOTAL u203)
+
+
+
+(define-data-var participantIdTip uint u0)
+(define-data-var idToRemove uint u0)
+
+(define-data-var lastKnownRoundId  uint u0)
 
 
 ;;      ////    CONFIG    \\\\      ;;
 
 (define-data-var minContribution uint u1000000)
-(define-data-var roundDuration uint u100)
+(define-data-var roundDuration uint u2)
 
 (define-data-var feePrinciple principal 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66)
 (define-data-var fee uint u3)
@@ -70,11 +79,6 @@
     { id: uint }
 )
 
-(define-data-var participantIdTip uint u0)
-(define-data-var idToRemove uint u0)
-
-(define-data-var lastRoundId uint u0)
-
 
 
 ;;      ////    PRIVATE    \\\\       ;;
@@ -102,7 +106,7 @@
 (define-private (calculate-return (id uint))
     (let
         (
-            (roundId (var-get lastRoundId))
+            (roundId (var-get lastKnownRoundId ))
 
             (totalStx (get totalStx (unwrap-panic 
                 (map-get? Rounds { 
@@ -129,7 +133,7 @@
 )
 
 ;; done... i think?
-(define-private (round-expired (id uint))
+(define-private (is-round-expired (id uint))
     (let
         (
             (round (unwrap-panic (map-get? Rounds { id: id })))
@@ -138,6 +142,7 @@
             (endBlockHeight (+ blockHeight duration))
         )
 
+        ;; ONLY >= FOR TESTING, CHANGE BACK TO >
         (if (> block-height endBlockHeight)
             true
             false
@@ -157,7 +162,7 @@
 (define-public (start-round)
     (let 
         (
-            (newRoundId (+ (var-get lastRoundId) u1))
+            (newRoundId (+ (var-get lastKnownRoundId) u1))
             (newRoundKeyTuple { id: newRoundId })
             (newRoundValueTuple {
                 totalStx: u0,
@@ -169,24 +174,28 @@
         )
 
         (begin
-            (var-set lastRoundId newRoundId)
+            (var-set lastKnownRoundId newRoundId)
             (asserts! (map-insert Rounds newRoundKeyTuple newRoundValueTuple) (err u0))
             (ok true)
         )
     )
 )
 
-(define-public (add-funds (amount uint) (roundId uint))
+(define-public (add-funds (amount uint))
     (begin
-        (asserts! (>= amount (var-get minContribution)) (err ERR_CONTRIBUTION_TOO_LOW))
         (let
             (
                 (user contract-caller)
                 (address tx-sender)
+                (roundId (var-get lastKnownRoundId))
                 (participantId (get-or-create-participant-id address))
                 (participant (unwrap-panic (map-get? Participants {id: participantId})))
                 (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
             )
+
+            (asserts! (>= amount (var-get minContribution)) (err ERR_CONTRIBUTION_TOO_LOW))
+            (asserts! (not (is-round-expired roundId)) (err ERR_ROUND_STILL_ACTIVE))
+
             (try! (stx-transfer? amount user MIA_CONTRACT_ADDRESS))
             (match (get amount (map-get? Contributions { id: participantId, round: roundId })) balance
                 (map-set Contributions {id: participantId, round: roundId} {amount: (+ balance amount)})
@@ -219,11 +228,12 @@
     )
 )
 
-(define-public (withdraw-funds (amount uint) (roundId uint))
+(define-public (withdraw-funds (amount uint))
     (begin
         (let
             (
                 (user contract-caller)
+                (roundId (var-get lastKnownRoundId))
                 (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                 (participantId (unwrap! (get id (map-get? ParticipantToId { participant: tx-sender })) (err ERR_ID_NOT_FOUND)))
                 (participant (unwrap-panic (map-get? Participants {id: participantId})))
@@ -268,55 +278,50 @@
     )
 )
 
+(define-public (mine-many (amounts (list 200 uint)))
+    (begin
+        (asserts! (is-round-expired (var-get lastKnownRoundId )) (err ERR_ROUND_STILL_ACTIVE))
+        (asserts! 
+            (is-eq (fold + amounts u0) (unwrap-panic (get totalStx (map-get? Rounds {id: (var-get lastKnownRoundId)})))) 
+            (err ERR_MINE_TOTAL_NOT_BALANCE_TOTAL)
+        )
+        ;;(contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 mine-many amounts)
+        (ok true)
+    )
+)
+
 ;;      ////    READ-ONLY    \\\\     ;;
 
-;; done
 (define-read-only (get-participant (id uint))
     (ok (map-get? Participants { id: id }))
 )
 
-;; done
-(define-read-only (get-min-contribution)
-    (ok (var-get minContribution))
+(define-read-only (get-participant-id (participant principal))
+    (ok (get id (map-get? ParticipantToId { participant: participant })))
 )
 
-;; done
-(define-read-only (get-current-round-id)
-    (ok (var-get lastRoundId))
+(define-read-only (get-participant-address (id uint))
+    (ok (get participant (map-get? IdToParticipant { id: id })))
+)
+
+(define-read-only (get-min-contribution)
+    (ok (var-get minContribution))
 )
 
 (define-read-only (get-contribution (id uint) (round uint))
     (ok (get amount (map-get? Contributions { id: id, round: round })))
 )
 
-;; done
-(define-read-only (get-participant-id (participant principal))
-    (ok (get id (map-get? ParticipantToId { participant: participant })))
-)
-
-;; done
-(define-read-only (get-participant-address (id uint))
-    (ok (get participant (map-get? IdToParticipant { id: id })))
+(define-read-only (get-current-round-id)
+    (ok (var-get lastKnownRoundId))
 )
 
 ;; in progress
 ;; if none, return (ok none) [don't unwrap]
 ;; if valid, return (ok (tuple... )) [requires unwrap]
 (define-read-only (get-round (id uint))
-;; use a match here
     (ok (map-get? Rounds { id: id }))
 )
-
-;; done
-(define-read-only (get-current-phase)
-    (if (round-expired (var-get lastRoundId))
-        ;; 0: idle, no round is active
-        ;; 1: active, accepting contributions
-        (ok u0)
-        (ok u1)
-    )
-)
-
 
 ;;   ||||     D E C E N T R A L I S E D .    G L O B A L .    S O V E R E I G N .      ||||
 
@@ -327,10 +332,12 @@
 ;; temp clarinet stuff
 
 ;; (contract-call? .miamipool start-round)
-;; (contract-call? .miamipool get-mining-round u1)
+;; (contract-call? .miamipool get-round u1)
+;; (contract-call? .miamipool get-current-round-id)
 ;; (contract-call? .miamipool get-or-create-participant-id 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5)
 ;; (contract-call? .miamipool get-participant u1)
 ;; (contract-call? .miamipool get-participant-address u1)
 ;; (contract-call? .miamipool add-funds u1000000 u1)
 ;; (contract-call? .miamipool withdraw-funds u400000 u1)
 ;; (contract-call? .miamipool get-contribution u1 u1)
+;; (contract-call? .miamipool mine-many (list u1000000 u3000000 u7000000 u6000000 u2000000))
