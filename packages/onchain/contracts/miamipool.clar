@@ -308,14 +308,16 @@
 
 (define-public (claim-mining-reward)
     (begin
-        (asserts! (not (>= block-height (var-get lastBlockToCheck))) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
         (let
             (
                 (roundId (var-get lastKnownRoundId))
                 (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                 (blocksWon (get blocksWon rounds))
                 (blockToClaim (element-at blocksWon u0))
+                (lastBlock (var-get lastBlockChecked))
             )
+            (asserts! (>= block-height (+ lastBlock u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
+            (asserts! (not (>= block-height (var-get lastBlockToCheck))) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
             ;;(try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 claim-mining-reward blockToClaim))
             (var-set indexOfBlockToClaim (+ (var-get indexOfBlockToClaim) u1))
         )
@@ -333,8 +335,8 @@
             (isWinner true)
             
         )
-
         (asserts! (>= block-height (+ lastBlock u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
+        (asserts! (not (>= block-height (var-get lastBlockToCheck))) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
 
         (if isWinner
             (begin 
@@ -357,23 +359,28 @@
     )
 )
 
-;; can be called after last redeemable block's MIA has been transferred to the contract
-;; WILL CHANGE THIS TO BE A SEND-MANY
-(define-public (payout-to-participant)
-    (let
-        (
-            (address tx-sender)
-            (roundId (var-get lastKnownRoundId))
-            (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
-            (participantId (unwrap! (get id (map-get? ParticipantToId { participant: address })) (err ERR_ID_NOT_FOUND)))
-        )
-        (asserts! (is-some (index-of (get participantIds rounds) participantId)) (err ERR_ID_NOT_IN_ROUND))
-        (ok (calculate-return participantId))
-        ;; (try! (as-contract (ft-transfer? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-token amount MIA_CONTRACT_ADDRESS tx-sender)))
-
-        ;; (ok true)
-    )
+(define-public (payout-mia))
+    ;; FEE PAYOUT
+    ;; POOL PAYOUT
 )
+
+;; ;; can be called after last redeemable block's MIA has been transferred to the contract
+;; ;; WILL CHANGE THIS TO BE A SEND-MANY
+;; (define-public (payout-to-participant)
+;;     (let
+;;         (
+;;             (address tx-sender)
+;;             (roundId (var-get lastKnownRoundId))
+;;             (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
+;;             (participantId (unwrap! (get id (map-get? ParticipantToId { participant: address })) (err ERR_ID_NOT_FOUND)))
+;;         )
+;;         (asserts! (is-some (index-of (get participantIds rounds) participantId)) (err ERR_ID_NOT_IN_ROUND))
+;;         (ok (calculate-return participantId))
+;;         ;; (try! (as-contract (ft-transfer? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-token amount MIA_CONTRACT_ADDRESS tx-sender)))
+
+;;         ;; (ok true)
+;;     )
+;; )
 
 ;;      ////    READ-ONLY    \\\\     ;;
 
