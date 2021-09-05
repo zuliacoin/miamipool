@@ -31,6 +31,7 @@
 (define-data-var idToRemove uint u0)
 
 (define-data-var lastKnownRoundId  uint u0)
+(define-data-var lastBlockChecked uint block-height)
 
 
 ;;      ////    CONFIG    \\\\      ;;
@@ -55,7 +56,7 @@
         blocksWon: (list 200 uint),
         totalMiaWon: uint,
         blockHeight: uint,
-        duration: uint,
+        duration: uint
     }
 )
 
@@ -293,6 +294,7 @@
             (err ERR_MINE_TOTAL_NOT_BALANCE_TOTAL)
         )
         ;; (try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 mine-many amounts))
+        (var-set lastBlockChecked (- block-height u1))
         (ok true)
     )
 )
@@ -306,30 +308,36 @@
 
 ;; WILL CHANGE THIS so that the contract already has the blocks it mined and someone just needs to call it after 100 blocks to check them all
 ;; again this means we won't need to pass in a any arguments
-(define-public (can-claim-mining-reward (minerBlockHeight uint))
+(define-public (can-claim-mining-reward)
     (let
         (
             (roundId (var-get lastKnownRoundId))
             (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
-            (isWinner (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 can-claim-mining-reward MIA_CONTRACT_ADDRESS minerBlockHeight))
+            (lastBlockChecked (var-get lastBlockChecked))
+            ;; (isWinner (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 can-claim-mining-reward MIA_CONTRACT_ADDRESS lastBlockChecked))
             (isWinner true)
+            
         )
-        (asserts! (is-some (index-of (get blocksWon rounds) minerBlockHeight)) (err ERR_BLOCK_ALREADY_CHECKED))
-        (asserts! (>= blockHeight (+ minerBlockHeight u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
+        (asserts! (is-some (index-of (get blocksWon rounds) lastBlockChecked)) (err ERR_BLOCK_ALREADY_CHECKED))
+        (asserts! (>= block-height (+ lastBlockChecked u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
         (if isWinner
-            (map-set Rounds {id: roundId}
-                {
-                    totalStx: (get totalStx rounds),
-                    participantIds: (get participantIds rounds),
-                    blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) roundId) u200)),
-                    totalMiaWon: (get totalMiaWon rounds),
-                    blockHeight: (get blockHeight rounds),
-                    duration: (get duration rounds)
-                }
+            (begin 
+                (map-set Rounds {id: roundId}
+                
+                    {
+                        totalStx: (get totalStx rounds),
+                        participantIds: (get participantIds rounds),
+                        blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) roundId) u200)),
+                        totalMiaWon: (get totalMiaWon rounds),
+                        blockHeight: (get blockHeight rounds),
+                        duration: (get duration rounds)
+                    }
+                )
+                (var-set lastBlockChecked (+ lastBlockChecked u1))
+                (ok true)
             )
-            true
+            (ok false)
         )
-        (ok minerBlockHeight)
     )
 )
 
