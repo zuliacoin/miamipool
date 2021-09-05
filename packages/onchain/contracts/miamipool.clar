@@ -24,6 +24,7 @@
 (define-constant ERR_CANNOT_ADD_FUNDS_TO_EXPIRED_ROUND u203)
 (define-constant ERR_MINE_TOTAL_NOT_BALANCE_TOTAL u204)
 (define-constant ERR_BLOCK_ALREADY_CHECKED u205)
+(define-constant ERR_WAIT_100_BLOCKS_BEFORE_CHECKING u206)
 
 
 
@@ -313,13 +314,13 @@
         (
             (roundId (var-get lastKnownRoundId))
             (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
-            (lastBlockChecked (var-get lastBlockChecked))
+            (lastBlock (var-get lastBlockChecked))
             ;; (isWinner (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 can-claim-mining-reward MIA_CONTRACT_ADDRESS lastBlockChecked))
             (isWinner true)
             
         )
-        (asserts! (is-some (index-of (get blocksWon rounds) lastBlockChecked)) (err ERR_BLOCK_ALREADY_CHECKED))
-        (asserts! (>= block-height (+ lastBlockChecked u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
+        (asserts! (is-some (index-of (get blocksWon rounds) lastBlock)) (err ERR_BLOCK_ALREADY_CHECKED))
+        (asserts! (>= block-height (+ lastBlock u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
         (if isWinner
             (begin 
                 (map-set Rounds {id: roundId}
@@ -333,7 +334,7 @@
                         duration: (get duration rounds)
                     }
                 )
-                (var-set lastBlockChecked (+ lastBlockChecked u1))
+                (var-set lastBlockChecked (+ lastBlock u1))
                 (ok true)
             )
             (ok false)
@@ -343,8 +344,7 @@
 
 ;; can be called after last redeemable block's MIA has been transferred to the contract
 ;; WILL CHANGE THIS TO BE A SEND-MANY
-(define-public (payout-to-participant (roundId uint))
-
+(define-public (payout-to-participant)
     (let
         (
             (address tx-sender)
