@@ -343,7 +343,7 @@
 
 ;; can be called after last redeemable block's MIA has been transferred to the contract
 ;; WILL CHANGE THIS TO BE A SEND-MANY
-(define-public (payout-to-participant (roundId: uint))
+(define-public (payout-to-participant (roundId uint))
 
     (let
         (
