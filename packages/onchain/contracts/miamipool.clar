@@ -25,6 +25,7 @@
 (define-constant ERR_MINE_TOTAL_NOT_BALANCE_TOTAL u204)
 (define-constant ERR_BLOCK_ALREADY_CHECKED u205)
 (define-constant ERR_WAIT_100_BLOCKS_BEFORE_CHECKING u206)
+(define-constant ERR_ALL_POSSIBLE_BLOCKS_CHECKED u207)
 
 
 
@@ -32,8 +33,10 @@
 (define-data-var idToRemove uint u0)
 
 (define-data-var lastKnownRoundId  uint u0)
-(define-data-var lastBlockChecked uint block-height)
 
+(define-data-var lastBlockChecked uint u0)
+(define-data-var lastBlockToCheck uint u0)
+(define-data-var indexOfBlockToClaim uint u0)
 
 ;;      ////    CONFIG    \\\\      ;;
 
@@ -208,6 +211,7 @@
                 (map-set Contributions {id: participantId, round: roundId} {amount: (+ balance amount)})
                 (map-set Contributions {id: participantId, round: roundId} {amount: amount})
             )
+
             (map-set Participants {id: participantId}
                 {
                     roundsParticipated:
@@ -296,19 +300,31 @@
         )
         ;; (try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 mine-many amounts))
         (var-set lastBlockChecked (- block-height u1))
+        (var-set lastBlockToCheck (+ block-height (len amounts) u100))
+        (var-set indexOfBlockToClaim u0)
         (ok true)
     )
 )
 
 ;; WILL CHANGE similar to the function below. We'll have the won blocks list so we can just check another block in that list every time someone calls this function.
 ;; this means we won't need to pass in a any arguments
-(define-public (claim-mining-reward (minerBlockHeight uint))
-    ;; (try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 claim-mining-reward minerBlockHeight))
-    (ok true)
+(define-public (claim-mining-reward)
+    (begin
+        (asserts! (not (>= block-height (var-get lastBlockToCheck))) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
+        (let
+            (
+                (roundId (var-get lastKnownRoundId))
+                (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
+                (blocksWon (get blocksWon rounds))
+                (blockToClaim (element-at blocksWon u0))
+            )
+            ;;(try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 claim-mining-reward blockToClaim))
+            (var-set indexOfBlockToClaim (+ (var-get indexOfBlockToClaim) u1))
+        )
+        (ok true)
+    )
 )
 
-;; WILL CHANGE THIS so that the contract already has the blocks it mined and someone just needs to call it after 100 blocks to check them all
-;; again this means we won't need to pass in a any arguments
 (define-public (can-claim-mining-reward)
     (let
         (
@@ -319,8 +335,9 @@
             (isWinner true)
             
         )
-        (asserts! (is-some (index-of (get blocksWon rounds) lastBlock)) (err ERR_BLOCK_ALREADY_CHECKED))
+
         (asserts! (>= block-height (+ lastBlock u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
+
         (if isWinner
             (begin 
                 (map-set Rounds {id: roundId}
