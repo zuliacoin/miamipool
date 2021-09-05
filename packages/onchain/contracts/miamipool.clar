@@ -306,8 +306,6 @@
     )
 )
 
-;; WILL CHANGE similar to the function below. We'll have the won blocks list so we can just check another block in that list every time someone calls this function.
-;; this means we won't need to pass in a any arguments
 (define-public (claim-mining-reward)
     (begin
         (asserts! (not (>= block-height (var-get lastBlockToCheck))) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
