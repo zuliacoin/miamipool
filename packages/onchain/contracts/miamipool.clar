@@ -26,6 +26,7 @@
 (define-constant ERR_BLOCK_ALREADY_CHECKED u205)
 (define-constant ERR_WAIT_100_BLOCKS_BEFORE_CHECKING u206)
 (define-constant ERR_ALL_POSSIBLE_BLOCKS_CHECKED u207)
+(define-constant ERR_MUST_REDEEM_ALL_WON_BLOCKS u208)
 
 
 
@@ -359,9 +360,22 @@
     )
 )
 
-(define-public (payout-mia))
-    ;; FEE PAYOUT
-    ;; POOL PAYOUT
+(define-public (payout-mia)
+    (begin
+        (let
+            (
+                (roundId (var-get lastKnownRoundId))
+                (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
+                (blocksWon (get blocksWon rounds))
+            )
+            (asserts! (is-eq (+ (var-get indexOfBlockToClaim) u1) (len blocksWon)) (err ERR_MUST_REDEEM_ALL_WON_BLOCKS))
+
+            ;; FEE PAYOUT
+
+            ;; POOL PAYOUT
+        )
+        (ok true)
+    )
 )
 
 ;; ;; can be called after last redeemable block's MIA has been transferred to the contract
