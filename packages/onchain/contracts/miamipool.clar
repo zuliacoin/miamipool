@@ -21,7 +21,7 @@
 (define-constant ERR_CONTRIBUTION_TOO_LOW u200)
 (define-constant ERR_ROUND_NOT_FOUND u201)
 (define-constant ERR_CANNOT_MINE_IF_ROUND_ACTIVE u202)
-(define-constant ERR_CANNOT_ADD_FUNDS_TO_EXPIRED_ROUND u203)
+(define-constant ERR_CANNOT_MODIFY_FUNDS_OF_EXPIRED_ROUND u203)
 (define-constant ERR_MINE_TOTAL_NOT_BALANCE_TOTAL u204)
 (define-constant ERR_BLOCK_ALREADY_CHECKED u205)
 (define-constant ERR_WAIT_100_BLOCKS_BEFORE_CHECKING u206)
@@ -43,14 +43,19 @@
 (define-data-var indexOfBlockToClaim uint u0)
 (define-data-var requiredPayouts uint u0)
 (define-data-var sendManyIds (list 200 uint) (list))
-(define-data-var isFeePaid bool false)
 
 ;;      ////    CONFIG    \\\\      ;;
 
 (define-data-var minContribution uint u1000000)
-(define-data-var roundDuration uint u2)
 
-(define-data-var feePrincipal principal 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66)
+(define-data-var feePrincipals (list 3 {principal: principal, percent: uint}) 
+    (list
+        {principal: 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66, percent: u33}
+        {principal: 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66, percent: u33}
+        {principal: 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66, percent: u33}
+    )
+)
+
 (define-data-var fee uint u3)
 
 (define-constant MIA_CONTRACT_ADDRESS (as-contract tx-sender))
@@ -64,10 +69,9 @@
     {
         totalStx: uint,
         participantIds: (list 4096 uint),
-        blocksWon: (list 200 uint),
+        blocksWon: (list 150 uint),
         totalMiaWon: uint,
-        blockHeight: uint,
-        duration: uint
+        blockHeight: uint
     }
 )
 
@@ -94,8 +98,6 @@
     { participant: principal}
     { id: uint }
 )
-
-
 
 ;;      ////    PRIVATE    \\\\       ;;
 ;; returns participant id if it has been created, or creates and returns new ID
@@ -148,11 +150,7 @@
                     id: roundId 
                 }) 
             )))
-            (totalMiaWon (get totalMiaWon (unwrap-panic 
-                (map-get? Rounds { 
-                    id: roundId 
-                }) 
-            )))
+            (totalMiaWon u1) ;;(ft-get-balance citycoin-token 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4))
             (contributionAmount (get amount (unwrap-panic 
                 (map-get? Contributions { 
                     id: id, 
@@ -164,14 +162,28 @@
     )
 )
 
+
+(define-private (payout-fee)
+    (let
+        ((payoutFeeList (map calculate-fee (var-get feePrincipals))))
+        true ;;(try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-token send-many payoutFeeList))
+    )
+)
+
+(define-private (calculate-fee (feePrincipalAndPercent {principal: principal, percent: uint}))
+    (let
+        ((totalMiaWon u1 ));;(ft-get-balance citycoin-token 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4))
+        {to: (get principal feePrincipalAndPercent),  amount: (/ (* totalMiaWon (get percent feePrincipalAndPercent)) u100)}
+    )
+)
+
 ;; done... i think?
 (define-private (is-round-expired (id uint))
     (let
         (
             (round (unwrap-panic (map-get? Rounds { id: id })))
-            (duration (get duration round))
             (blockHeight (get blockHeight round))
-            (endBlockHeight (+ blockHeight duration))
+            (endBlockHeight (+ blockHeight u150))
         )
 
         ;; ONLY >= FOR TESTING, CHANGE BACK TO >
@@ -179,14 +191,6 @@
             true
             false
         )
-    )
-)
-
-;; add authorisation to this somehow
-(define-public (set-min-contribution (amount uint))
-    (begin
-        (var-set minContribution amount)
-        (ok true)
     )
 )
 
@@ -201,8 +205,7 @@
                 participantIds: (list),
                 blocksWon: (list),
                 totalMiaWon: u0,
-                blockHeight: block-height,
-                duration: (var-get roundDuration)
+                blockHeight: block-height
             })
         )
 
@@ -227,7 +230,7 @@
             )
 
             (asserts! (>= amount (var-get minContribution)) (err ERR_CONTRIBUTION_TOO_LOW))
-            (asserts! (not (is-round-expired roundId)) (err ERR_CANNOT_ADD_FUNDS_TO_EXPIRED_ROUND))
+            (asserts! (not (is-round-expired roundId)) (err ERR_CANNOT_MODIFY_FUNDS_OF_EXPIRED_ROUND))
 
             (try! (stx-transfer? amount address MIA_CONTRACT_ADDRESS))
             (match (get amount (map-get? Contributions { id: participantId, round: roundId })) balance
@@ -254,8 +257,7 @@
                     ),
                     blocksWon: (get blocksWon rounds),
                     totalMiaWon: (get totalMiaWon rounds),
-                    blockHeight: (get blockHeight rounds),
-                    duration: (get duration rounds)
+                    blockHeight: (get blockHeight rounds)
                 }
             )
             (ok true)
@@ -276,6 +278,7 @@
             (asserts! (is-some (index-of (get participantIds rounds) participantId)) (err ERR_ID_NOT_IN_ROUND))
             (asserts! (> amount u0) (err ERR_INVALID_AMOUNT))
             (asserts! (<= amount balance) (err ERR_INSUFFICIENT_BALANCE))
+            (asserts! (not (is-round-expired roundId)) (err ERR_CANNOT_MODIFY_FUNDS_OF_EXPIRED_ROUND))
 
             (try! (as-contract (stx-transfer? amount MIA_CONTRACT_ADDRESS tx-sender)))
             (map-set Contributions {id: participantId, round: roundId} {amount: (- balance amount)})
@@ -304,8 +307,7 @@
                     ),
                     blocksWon: (get blocksWon rounds),
                     totalMiaWon: (get totalMiaWon rounds),
-                    blockHeight: (get blockHeight rounds),
-                    duration: (get duration rounds)
+                    blockHeight: (get blockHeight rounds)
                 }
             )
             (ok true)
@@ -314,7 +316,7 @@
 )
 
 ;; add operator auth to this
-(define-public (mine-many (amounts (list 200 uint)))
+(define-public (mine-many (amounts (list 150 uint)))
     (begin
         (let
             (
@@ -331,7 +333,6 @@
             (var-set indexOfBlockToClaim u0)
             (var-set requiredPayouts u0)
             (var-set sendManyIds (list))
-            (var-set isFeePaid false)
         )
         
         (ok true)
@@ -377,10 +378,9 @@
                     {
                         totalStx: (get totalStx rounds),
                         participantIds: (get participantIds rounds),
-                        blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) roundId) u200)),
+                        blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) roundId) u150)),
                         totalMiaWon: (get totalMiaWon rounds),
-                        blockHeight: (get blockHeight rounds),
-                        duration: (get duration rounds)
+                        blockHeight: (get blockHeight rounds)
                     }
                 )
                 (var-set lastBlockChecked (+ lastBlock u1))
@@ -403,7 +403,7 @@
                 (requiredPayout (var-get requiredPayouts))
             )
             (asserts! (not (is-eq (+ (var-get indexOfBlockToClaim) u1) (len blocksWon))) (err ERR_MUST_REDEEM_ALL_WON_BLOCKS))
-            (asserts! (not (is-eq requiredPayout (+ (/ (len participantIds) u200) u1 ))) (err ERR_ALL_PARTICIPANTS_PAID))
+            (asserts! (not (is-eq requiredPayout (+ (/ (len participantIds) u150) u1 ))) (err ERR_ALL_PARTICIPANTS_PAID))
             (asserts! (not (is-eq (+ (var-get indexOfBlockToClaim) u1) (len blocksWon))) (err ERR_MUST_REDEEM_ALL_WON_BLOCKS))
 
             (if (is-eq requiredPayout u0)
@@ -414,11 +414,10 @@
                             participantIds: (get participantIds rounds),
                             blocksWon: (get blocksWon rounds) ,
                             totalMiaWon: (get totalMiaWon rounds), ;;(ft-get-balance citycoin-token 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4),
-                            blockHeight: (get blockHeight rounds),
-                            duration: (get duration rounds)
+                            blockHeight: (get blockHeight rounds)
                         }
                     )
-                    ;; CALL PRIVATE FEE PAYOUT FUNCTION HERE!
+                    (payout-fee)
                 )
                 false
             )
