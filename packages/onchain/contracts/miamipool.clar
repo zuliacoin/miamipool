@@ -554,24 +554,3 @@
 ;;   ||||     D E C E N T R A L I S E D .    G L O B A L .    S O V E R E I G N .      ||||
 
 ;;                    ||||     S Y V I T A    G U I L D     ||||
-
-
-;; STUFF THAT CURRENTLY NEEDS AN OPERATOR ADDRESS
-
-;; set-min-contribution
-;; mine-many
-;; start-round
-
-
-;; temp clarinet stuff
-
-;; (contract-call? .miamipool start-round)
-;; (contract-call? .miamipool get-round u1)
-;; (contract-call? .miamipool get-current-round-id)
-;; (contract-call? .miamipool get-or-create-participant-id 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5)
-;; (contract-call? .miamipool get-participant u1)
-;; (contract-call? .miamipool get-participant-address u1)
-;; (contract-call? .miamipool add-funds u1000000 u1)
-;; (contract-call? .miamipool withdraw-funds u400000 u1)
-;; (contract-call? .miamipool get-contribution u1 u1)
-;; (contract-call? .miamipool mine-many (list u1000000 u3000000 u7000000 u6000000 u2000000))
