@@ -27,10 +27,13 @@
 (define-constant ERR_WAIT_100_BLOCKS_BEFORE_CHECKING u206)
 (define-constant ERR_ALL_POSSIBLE_BLOCKS_CHECKED u207)
 (define-constant ERR_MUST_REDEEM_ALL_WON_BLOCKS u208)
+(define-constant ERR_ALL_PARTICIPANTS_PAID u209)
 
 
 
 (define-data-var participantIdTip uint u0)
+
+;; filter vars
 (define-data-var idToRemove uint u0)
 
 (define-data-var lastKnownRoundId  uint u0)
@@ -38,6 +41,9 @@
 (define-data-var lastBlockChecked uint u0)
 (define-data-var lastBlockToCheck uint u0)
 (define-data-var indexOfBlockToClaim uint u0)
+(define-data-var requiredPayouts uint u0)
+(define-data-var sendManyIds (list 200 uint) (list))
+(define-data-var isFeePaid bool false)
 
 ;;      ////    CONFIG    \\\\      ;;
 
@@ -71,7 +77,7 @@
 	{ amount: uint }
 )
 
-;; stores up to last 512 rounds a partipant was in
+;; stores up to last 512 rounds a participant was in
 (define-map Participants
     { id: uint }
 	{ roundsParticipated: (list 512 uint) }
@@ -107,29 +113,46 @@
   )
 )
 
+
+;; FILTERS
+
 (define-private (is-not-id (participantId uint))
   (not (is-eq participantId (var-get idToRemove)))
 )
 
+(define-private (is-in-next-200-ids (id uint))
+  (let
+    (
+        (roundId (var-get lastKnownRoundId))
+        (rounds (unwrap-panic (map-get? Rounds {id: roundId})))
+        (participantIds (get participantIds rounds))
+        (payoutIndexOfIds (* (var-get requiredPayouts) u200))
+        (indexOfId (unwrap-panic (index-of participantIds id)))
+    )
+
+    (if (and (>= indexOfId payoutIndexOfIds) (< indexOfId payoutIndexOfIds))  
+        (var-set sendManyIds (unwrap-panic (as-max-len? (append (var-get sendManyIds) id) u200)))
+        false
+    )
+  )
+)
 
 ;; maybe done? needs checking
 (define-private (calculate-return (id uint))
     (let
         (
             (roundId (var-get lastKnownRoundId ))
-
+            (participant (unwrap-panic (map-get? IdToParticipant {id: id})))
             (totalStx (get totalStx (unwrap-panic 
                 (map-get? Rounds { 
                     id: roundId 
                 }) 
             )))
-
             (totalMiaWon (get totalMiaWon (unwrap-panic 
                 (map-get? Rounds { 
                     id: roundId 
                 }) 
             )))
-
             (contributionAmount (get amount (unwrap-panic 
                 (map-get? Contributions { 
                     id: id, 
@@ -137,8 +160,7 @@
                 })
             )))
         )
-        
-        (* totalMiaWon (/ contributionAmount totalStx))
+        {to: participant,  amount: (* totalMiaWon (/ contributionAmount totalStx))}
     )
 )
 
@@ -294,15 +316,24 @@
 ;; add operator auth to this
 (define-public (mine-many (amounts (list 200 uint)))
     (begin
-        (asserts! (is-round-expired (var-get lastKnownRoundId )) (err ERR_CANNOT_MINE_IF_ROUND_ACTIVE))
-        (asserts! 
-            (is-eq (fold + amounts u0) (unwrap-panic (get totalStx (map-get? Rounds {id: (var-get lastKnownRoundId)})))) 
-            (err ERR_MINE_TOTAL_NOT_BALANCE_TOTAL)
+        (let
+            (
+                (roundId (var-get lastKnownRoundId))
+                (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
+                (totalStx (get totalStx rounds))
+                (participantIds (get participantIds rounds))
+            )
+            (asserts! (is-round-expired roundId) (err ERR_CANNOT_MINE_IF_ROUND_ACTIVE))
+            (asserts! (is-eq (fold + amounts u0) totalStx) (err ERR_MINE_TOTAL_NOT_BALANCE_TOTAL))
+            ;; (try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 mine-many amounts))
+            (var-set lastBlockChecked (- block-height u1))
+            (var-set lastBlockToCheck (+ block-height (len amounts) u100))
+            (var-set indexOfBlockToClaim u0)
+            (var-set requiredPayouts u0)
+            (var-set sendManyIds (list))
+            (var-set isFeePaid false)
         )
-        ;; (try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 mine-many amounts))
-        (var-set lastBlockChecked (- block-height u1))
-        (var-set lastBlockToCheck (+ block-height (len amounts) u100))
-        (var-set indexOfBlockToClaim u0)
+        
         (ok true)
     )
 )
@@ -360,6 +391,7 @@
     )
 )
 
+;; Will need to be called multiple times in the UI (can payout max 200 participants at a time)
 (define-public (payout-mia)
     (begin
         (let
@@ -367,8 +399,36 @@
                 (roundId (var-get lastKnownRoundId))
                 (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                 (blocksWon (get blocksWon rounds))
+                (participantIds (get participantIds rounds))
+                (requiredPayout (var-get requiredPayouts))
             )
-            (asserts! (is-eq (+ (var-get indexOfBlockToClaim) u1) (len blocksWon)) (err ERR_MUST_REDEEM_ALL_WON_BLOCKS))
+            (asserts! (not (is-eq (+ (var-get indexOfBlockToClaim) u1) (len blocksWon))) (err ERR_MUST_REDEEM_ALL_WON_BLOCKS))
+            (asserts! (not (is-eq requiredPayout (+ (/ (len participantIds) u200) u1 ))) (err ERR_ALL_PARTICIPANTS_PAID))
+            (asserts! (not (is-eq (+ (var-get indexOfBlockToClaim) u1) (len blocksWon))) (err ERR_MUST_REDEEM_ALL_WON_BLOCKS))
+
+            (if (is-eq requiredPayout u0)
+                (begin
+                    (map-set Rounds {id: roundId}
+                        {
+                            totalStx: (get totalStx rounds),
+                            participantIds: (get participantIds rounds),
+                            blocksWon: (get blocksWon rounds) ,
+                            totalMiaWon: (get totalMiaWon rounds), ;;(ft-get-balance citycoin-token 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4),
+                            blockHeight: (get blockHeight rounds),
+                            duration: (get duration rounds)
+                        }
+                    )
+                    ;; CALL PRIVATE FEE PAYOUT FUNCTION HERE!
+                )
+                false
+            )
+            (filter is-in-next-200-ids participantIds)
+            (let
+                ((sendManyList (map calculate-return (var-get sendManyIds))))
+                true ;;(try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-token send-many sendManyList))
+            )
+
+            (var-set requiredPayouts (+ requiredPayout u1))
 
             ;; FEE PAYOUT
 
@@ -378,23 +438,6 @@
     )
 )
 
-;; ;; can be called after last redeemable block's MIA has been transferred to the contract
-;; ;; WILL CHANGE THIS TO BE A SEND-MANY
-;; (define-public (payout-to-participant)
-;;     (let
-;;         (
-;;             (address tx-sender)
-;;             (roundId (var-get lastKnownRoundId))
-;;             (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
-;;             (participantId (unwrap! (get id (map-get? ParticipantToId { participant: address })) (err ERR_ID_NOT_FOUND)))
-;;         )
-;;         (asserts! (is-some (index-of (get participantIds rounds) participantId)) (err ERR_ID_NOT_IN_ROUND))
-;;         (ok (calculate-return participantId))
-;;         ;; (try! (as-contract (ft-transfer? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-token amount MIA_CONTRACT_ADDRESS tx-sender)))
-
-;;         ;; (ok true)
-;;     )
-;; )
 
 ;;      ////    READ-ONLY    \\\\     ;;
 
