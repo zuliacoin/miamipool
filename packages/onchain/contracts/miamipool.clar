@@ -9,8 +9,6 @@
 
 ;;      ////    ERRORS    \\\\      ;;
 
-;; needa update these
-
 ;; RBAC (1xx)
 (define-constant ERR_INVALID_AMOUNT u100)
 (define-constant ERR_ID_NOT_FOUND u101)
@@ -29,6 +27,9 @@
 (define-constant ERR_MUST_REDEEM_ALL_WON_BLOCKS u208)
 (define-constant ERR_ALL_PARTICIPANTS_PAID u209)
 (define-constant ERR_MINING_NOT_STARTED u210)
+(define-constant ERR_ALREADY_MINED u211)
+(define-constant ERR_ROUND_HAS_NOT_EXPIRED u212)
+
 
 (define-data-var participantIdTip uint u0)
 
@@ -74,7 +75,7 @@
 (define-map RoundsStatus
     { id: uint }
     {
-        miningStarted: bool,
+        hasMined: bool,
         lastBlockChecked: uint,
         lastBlockToCheck: uint,
         indexOfBlockToClaim: uint,
@@ -148,7 +149,7 @@
     (if (and (>= indexOfId payoutIndexOfIds) (< indexOfId payoutIndexOfIds))
         (map-set RoundsStatus {id: roundId}
             {
-                miningStarted: (get miningStarted roundsStatus),
+                hasMined: (get hasMined roundsStatus),
                 lastBlockChecked: (get lastBlockChecked roundsStatus),
                 lastBlockToCheck: (get lastBlockToCheck roundsStatus),
                 indexOfBlockToClaim: (get indexOfBlockToClaim roundsStatus),
@@ -224,8 +225,9 @@
 (define-public (start-round)
     (let 
         (
-            (newRoundId (+ (var-get lastKnownRoundId) u1))
-            (newRoundKeyTuple { id: newRoundId })
+            (roundId (var-get lastKnownRoundId))
+            (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
+            (newRoundKeyTuple { id: (+ roundId u1) })
             (newRoundValueTuple {
                 totalStx: u0,
                 participantIds: (list),
@@ -234,7 +236,7 @@
                 blockHeight: block-height
             })
             (newRoundStatusValueTuple {
-                miningStarted: false,
+                hasMined: false,
                 lastBlockChecked: u0,
                 lastBlockToCheck: u0,
                 indexOfBlockToClaim: u0,
@@ -244,7 +246,8 @@
         )
 
         (begin
-            (var-set lastKnownRoundId newRoundId)
+            (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
+            (var-set lastKnownRoundId (+ roundId u1))
             (asserts! (map-insert Rounds newRoundKeyTuple newRoundValueTuple) (err u0))
             (asserts! (map-insert RoundsStatus newRoundKeyTuple newRoundStatusValueTuple) (err u0))
             (ok true)
@@ -366,43 +369,60 @@
     (begin
         (let
             (
-                (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                 (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
-                (totalStx (get totalStx rounds))
-                (participantIds (get participantIds rounds))
-                (uwu (/ totalStx u150))
-                (miningBlocksList 
-                    (list 
-                        uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                        uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                        uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                        uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                        uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                        uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                        uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                        uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                        uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                        uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                    )
-                )
+                (hasMined (get hasMined roundsStatus))
             )
-            (asserts! (is-round-expired roundId) (err ERR_CANNOT_MINE_IF_ROUND_ACTIVE))
-
-            (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 mine-many miningBlocksList))
-            
-            
-            (map-set RoundsStatus {id: roundId}
+            (asserts! (not hasMined) (err ERR_ALREADY_MINED))
+            (asserts! (is-round-expired roundId) (err ERR_ROUND_HAS_NOT_EXPIRED))
+        )
+        (if (< (stx-get-balance MIA_CONTRACT_ADDRESS) u15)
+            (map-set RoundsStatus {id: roundId} 
                 {
-                    miningStarted: true,
-                    lastBlockChecked: (- block-height u1),
-                    lastBlockToCheck: (+ block-height u150),
+                    hasMined: true,
+                    lastBlockChecked: u0,
+                    lastBlockToCheck: u0,
                     indexOfBlockToClaim: u0,
                     requiredPayouts: u0,
                     sendManyIds: (list)
                 }
             )
-        (ok true)
+            (let
+                (
+                    (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
+                    (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
+                    (totalStx (get totalStx rounds))
+                    (participantIds (get participantIds rounds))
+                    (uwu (/ totalStx u150))
+                    (miningBlocksList 
+                        (list 
+                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                        )
+                    )
+                )
+                (asserts! (is-round-expired roundId) (err ERR_CANNOT_MINE_IF_ROUND_ACTIVE))
+                (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 mine-many miningBlocksList))
+                (map-set RoundsStatus {id: roundId}
+                    {
+                        hasMined: true,
+                        lastBlockChecked: (- block-height u1),
+                        lastBlockToCheck: (+ block-height u150),
+                        indexOfBlockToClaim: u0,
+                        requiredPayouts: u0,
+                        sendManyIds: (list)
+                    }
+                )
+            )
         )
+        (ok true)
     )
 )
 
@@ -416,7 +436,7 @@
             (isWinner (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 can-claim-mining-reward MIA_CONTRACT_ADDRESS lastBlockChecked))
             
         )
-        (asserts! (get miningStarted roundsStatus) (err ERR_MINING_NOT_STARTED))
+        (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
         (asserts! (>= block-height (+ lastBlockChecked u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
         (asserts! (not (>= block-height lastBlockToCheck)) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
 
@@ -434,7 +454,7 @@
                 )
                 (map-set RoundsStatus {id: roundId}
                     {
-                        miningStarted: (get miningStarted roundsStatus),
+                        hasMined: (get hasMined roundsStatus),
                         lastBlockChecked: (+ lastBlockChecked u1),
                         lastBlockToCheck: (get lastBlockToCheck roundsStatus),
                         indexOfBlockToClaim: (+ (get indexOfBlockToClaim roundsStatus) u1),
@@ -460,14 +480,14 @@
                 (lastBlockChecked (get lastBlockChecked roundsStatus))
                 (lastBlockToCheck (get lastBlockToCheck roundsStatus))
             )
-            (asserts! (get miningStarted roundsStatus) (err ERR_MINING_NOT_STARTED))
+            (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
             (asserts! (>= block-height (+ lastBlockChecked u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
             (asserts! (not (>= block-height lastBlockToCheck)) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
             (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 claim-mining-reward blockToClaim))
 
             (map-set RoundsStatus {id: roundId}
                 {
-                    miningStarted: (get miningStarted roundsStatus),
+                    hasMined: (get hasMined roundsStatus),
                     lastBlockChecked: (get lastBlockChecked roundsStatus),
                     lastBlockToCheck: (get lastBlockToCheck roundsStatus),
                     indexOfBlockToClaim: (+ (get indexOfBlockToClaim roundsStatus) u1),
@@ -493,7 +513,7 @@
                 (indexOfBlockToClaim (get indexOfBlockToClaim roundsStatus))
                 (sendManyIds (get sendManyIds roundsStatus))
             )
-            (asserts! (get miningStarted roundsStatus) (err ERR_MINING_NOT_STARTED))
+            (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
             (asserts! (not (is-eq (+ indexOfBlockToClaim u1) (len blocksWon))) (err ERR_MUST_REDEEM_ALL_WON_BLOCKS))
             (asserts! (not (is-eq requiredPayout (+ (/ (len participantIds) u150) u1 ))) (err ERR_ALL_PARTICIPANTS_PAID))
             (asserts! (not (is-eq (+ indexOfBlockToClaim u1) (len blocksWon))) (err ERR_MUST_REDEEM_ALL_WON_BLOCKS))
@@ -525,7 +545,7 @@
 
             (map-set RoundsStatus {id: roundId}
                     {
-                        miningStarted: (get miningStarted roundsStatus),
+                        hasMined: (get hasMined roundsStatus),
                         lastBlockChecked: (get lastBlockChecked roundsStatus),
                         lastBlockToCheck: (get lastBlockToCheck roundsStatus),
                         indexOfBlockToClaim: indexOfBlockToClaim,
