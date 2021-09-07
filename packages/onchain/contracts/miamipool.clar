@@ -28,8 +28,7 @@
 (define-constant ERR_ALL_POSSIBLE_BLOCKS_CHECKED u207)
 (define-constant ERR_MUST_REDEEM_ALL_WON_BLOCKS u208)
 (define-constant ERR_ALL_PARTICIPANTS_PAID u209)
-
-
+(define-constant ERR_MINING_NOT_STARTED u210)
 
 (define-data-var participantIdTip uint u0)
 
@@ -75,6 +74,7 @@
 (define-map RoundsStatus
     { id: uint }
     {
+        miningStarted: bool,
         lastBlockChecked: uint,
         lastBlockToCheck: uint,
         indexOfBlockToClaim: uint,
@@ -148,6 +148,7 @@
     (if (and (>= indexOfId payoutIndexOfIds) (< indexOfId payoutIndexOfIds))
         (map-set RoundsStatus {id: roundId}
             {
+                miningStarted: (get miningStarted roundsStatus),
                 lastBlockChecked: (get lastBlockChecked roundsStatus),
                 lastBlockToCheck: (get lastBlockToCheck roundsStatus),
                 indexOfBlockToClaim: (get indexOfBlockToClaim roundsStatus),
@@ -171,7 +172,8 @@
                     id: roundId 
                 }) 
             )))
-            (totalMiaWon u1) ;;(ft-get-balance citycoin-token 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4))
+            (totalMiaWon (unwrap-panic (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token get-balance MIA_CONTRACT_ADDRESS)))
+            
             (contributionAmount (get amount (unwrap-panic 
                 (map-get? Contributions { 
                     id: participantId, 
@@ -179,22 +181,27 @@
                 })
             )))
         )
-        {to: participant,  amount: (* totalMiaWon (/ contributionAmount totalStx))}
+        {to: (get participant participant), memo: none, amount: (* totalMiaWon (/ contributionAmount totalStx))}
+    )
+)
+
+(define-private (calculate-fee (feePrincipalAndPercent {principal: principal, percent: uint}))
+    (let
+        ((totalMiaWon (unwrap-panic (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token get-balance MIA_CONTRACT_ADDRESS))))
+        {to: (get principal feePrincipalAndPercent), memo: none, amount: (/ (* totalMiaWon (get percent feePrincipalAndPercent)) u100)}
     )
 )
 
 
 (define-private (payout-fee)
     (let
-        ((payoutFeeList (map calculate-fee (var-get feePrincipals))))
-        true ;;(try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-token send-many payoutFeeList))
-    )
-)
-
-(define-private (calculate-fee (feePrincipalAndPercent {principal: principal, percent: uint}))
-    (let
-        ((totalMiaWon u1 ));;(ft-get-balance citycoin-token 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4))
-        {to: (get principal feePrincipalAndPercent),  amount: (/ (* totalMiaWon (get percent feePrincipalAndPercent)) u100)}
+        (
+            (payoutFeeList (map calculate-fee (var-get feePrincipals)))
+        )
+        (begin
+            (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many (unwrap-panic (as-max-len? payoutFeeList u200))))   
+            (ok true)
+        )
     )
 )
 
@@ -206,7 +213,6 @@
             (blockHeight (get blockHeight round))
             (endBlockHeight (+ blockHeight u150))
         )
-
         (if (> block-height endBlockHeight)
             true
             false
@@ -227,11 +233,20 @@
                 totalMiaWon: u0,
                 blockHeight: block-height
             })
+            (newRoundStatusValueTuple {
+                miningStarted: false,
+                lastBlockChecked: u0,
+                lastBlockToCheck: u0,
+                indexOfBlockToClaim: u0,
+                requiredPayouts: u0,
+                sendManyIds: (list),
+            })
         )
 
         (begin
             (var-set lastKnownRoundId newRoundId)
             (asserts! (map-insert Rounds newRoundKeyTuple newRoundValueTuple) (err u0))
+            (asserts! (map-insert RoundsStatus newRoundKeyTuple newRoundStatusValueTuple) (err u0))
             (ok true)
         )
 
@@ -312,6 +327,7 @@
             (asserts! (not (is-round-expired roundId)) (err ERR_CANNOT_MODIFY_FUNDS_OF_EXPIRED_ROUND))
 
             (try! (as-contract (stx-transfer? amount MIA_CONTRACT_ADDRESS tx-sender)))
+
             (map-set Contributions {id: participantId, round: roundId} {amount: (- balance amount)})
             (map-set Participants {id: participantId}
                 {
@@ -346,12 +362,12 @@
     )
 )
 
-(define-public (mine-many (roundId uint))
+(define-public (mine (roundId uint))
     (begin
         (let
             (
                 (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
-                (roundsStatus (unwrap-panic (map-get? RoundsStatus {id: roundId})))
+                (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                 (totalStx (get totalStx rounds))
                 (participantIds (get participantIds rounds))
                 (uwu (/ totalStx u150))
@@ -371,16 +387,13 @@
                 )
             )
             (asserts! (is-round-expired roundId) (err ERR_CANNOT_MINE_IF_ROUND_ACTIVE))
-            ;; (asserts! (is-eq (fold + amounts u0) totalStx) (err ERR_MINE_TOTAL_NOT_BALANCE_TOTAL))
 
-
-
-
-            ;; (try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 mine-many miningBlocksList))
+            (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 mine-many miningBlocksList))
             
             
             (map-set RoundsStatus {id: roundId}
                 {
+                    miningStarted: true,
                     lastBlockChecked: (- block-height u1),
                     lastBlockToCheck: (+ block-height u150),
                     indexOfBlockToClaim: u0,
@@ -398,13 +411,13 @@
         (
             (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
             (roundsStatus (unwrap-panic (map-get? RoundsStatus {id: roundId})))
-            (lastBlock (get lastBlockChecked roundsStatus))
+            (lastBlockChecked (get lastBlockChecked roundsStatus))
             (lastBlockToCheck (get lastBlockToCheck roundsStatus))
-            ;; (isWinner (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 can-claim-mining-reward MIA_CONTRACT_ADDRESS lastBlockChecked))
-            (isWinner true)
+            (isWinner (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 can-claim-mining-reward MIA_CONTRACT_ADDRESS lastBlockChecked))
             
         )
-        (asserts! (>= block-height (+ lastBlock u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
+        (asserts! (get miningStarted roundsStatus) (err ERR_MINING_NOT_STARTED))
+        (asserts! (>= block-height (+ lastBlockChecked u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
         (asserts! (not (>= block-height lastBlockToCheck)) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
 
         (if isWinner
@@ -421,7 +434,8 @@
                 )
                 (map-set RoundsStatus {id: roundId}
                     {
-                        lastBlockChecked: (+ lastBlock u1),
+                        miningStarted: (get miningStarted roundsStatus),
+                        lastBlockChecked: (+ lastBlockChecked u1),
                         lastBlockToCheck: (get lastBlockToCheck roundsStatus),
                         indexOfBlockToClaim: (+ (get indexOfBlockToClaim roundsStatus) u1),
                         requiredPayouts: (get requiredPayouts roundsStatus),
@@ -442,16 +456,18 @@
                 (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                 (roundsStatus (unwrap-panic (map-get? RoundsStatus {id: roundId})))
                 (blocksWon (get blocksWon rounds))
-                (blockToClaim (element-at blocksWon u0))
+                (blockToClaim (unwrap-panic (element-at blocksWon u0)))
                 (lastBlockChecked (get lastBlockChecked roundsStatus))
                 (lastBlockToCheck (get lastBlockToCheck roundsStatus))
             )
+            (asserts! (get miningStarted roundsStatus) (err ERR_MINING_NOT_STARTED))
             (asserts! (>= block-height (+ lastBlockChecked u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
             (asserts! (not (>= block-height lastBlockToCheck)) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
-            ;;(try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 claim-mining-reward blockToClaim))
+            (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 claim-mining-reward blockToClaim))
 
             (map-set RoundsStatus {id: roundId}
                 {
+                    miningStarted: (get miningStarted roundsStatus),
                     lastBlockChecked: (get lastBlockChecked roundsStatus),
                     lastBlockToCheck: (get lastBlockToCheck roundsStatus),
                     indexOfBlockToClaim: (+ (get indexOfBlockToClaim roundsStatus) u1),
@@ -470,17 +486,20 @@
         (let
             (
                 (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
-                (roundsStatus (unwrap-panic (map-get? RoundsStatus {id: roundId})))
+                (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                 (blocksWon (get blocksWon rounds))
                 (participantIds (get participantIds rounds))
                 (requiredPayout (get requiredPayouts roundsStatus))
                 (indexOfBlockToClaim (get indexOfBlockToClaim roundsStatus))
                 (sendManyIds (get sendManyIds roundsStatus))
             )
+            (asserts! (get miningStarted roundsStatus) (err ERR_MINING_NOT_STARTED))
             (asserts! (not (is-eq (+ indexOfBlockToClaim u1) (len blocksWon))) (err ERR_MUST_REDEEM_ALL_WON_BLOCKS))
             (asserts! (not (is-eq requiredPayout (+ (/ (len participantIds) u150) u1 ))) (err ERR_ALL_PARTICIPANTS_PAID))
             (asserts! (not (is-eq (+ indexOfBlockToClaim u1) (len blocksWon))) (err ERR_MUST_REDEEM_ALL_WON_BLOCKS))
 
+
+            ;; ERR IN IF
             (if (is-eq requiredPayout u0)
                 (begin
                     (map-set Rounds {id: roundId}
@@ -488,11 +507,12 @@
                             totalStx: (get totalStx rounds),
                             participantIds: (get participantIds rounds),
                             blocksWon: (get blocksWon rounds) ,
-                            totalMiaWon: (get totalMiaWon rounds), ;;(ft-get-balance citycoin-token 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4),
+                            totalMiaWon: (unwrap-panic (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token get-balance MIA_CONTRACT_ADDRESS)),
                             blockHeight: (get blockHeight rounds)
                         }
                     )
-                    (payout-fee)
+                    (try! (payout-fee))
+                    true
                 )
                 false
             )
@@ -500,11 +520,12 @@
             (filter is-in-next-200-ids participantIds)
             (let
                 ((sendManyList (map calculate-return sendManyIds)))
-                true ;;(try! (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-token send-many sendManyList))
+                (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many sendManyList))
             )
 
             (map-set RoundsStatus {id: roundId}
                     {
+                        miningStarted: (get miningStarted roundsStatus),
                         lastBlockChecked: (get lastBlockChecked roundsStatus),
                         lastBlockToCheck: (get lastBlockToCheck roundsStatus),
                         indexOfBlockToClaim: indexOfBlockToClaim,
@@ -554,3 +575,6 @@
 ;;   ||||     D E C E N T R A L I S E D .    G L O B A L .    S O V E R E I G N .      ||||
 
 ;;                    ||||     S Y V I T A    G U I L D     ||||
+
+;; (contract-call? .citycoin-auth  initialize-contracts 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1)
+;; (contract-call? .citycoin-core-v1 register-user none)
