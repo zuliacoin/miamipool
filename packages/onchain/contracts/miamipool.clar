@@ -375,7 +375,7 @@
             (asserts! (not hasMined) (err ERR_ALREADY_MINED))
             (asserts! (is-round-expired roundId) (err ERR_ROUND_HAS_NOT_EXPIRED))
         )
-        (if (< (stx-get-balance MIA_CONTRACT_ADDRESS) u15)
+        (if (< (stx-get-balance MIA_CONTRACT_ADDRESS) u150)
             (map-set RoundsStatus {id: roundId} 
                 {
                     hasMined: true,
