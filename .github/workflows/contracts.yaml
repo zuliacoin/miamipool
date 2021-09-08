@@ -9,8 +9,9 @@ jobs:
     steps: 
       - name: checkout code
         uses: actions/checkout@v2
-      - run: cd packages/onchain
       - name: check contract syntax
+        working-directory: ./packages/onchain
         run: clarinet check
       - name: run tests
+        working-directory: ./packages/onchain
         run: clarinet test
