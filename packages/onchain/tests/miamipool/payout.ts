@@ -45,7 +45,7 @@ export async function payoutBeforeMiningStarts() {
 
 export async function payoutAfterAllRedeemed() {
     Clarinet.test({
-        name: 'If payout-mia is called after all blocks are redeemed, it succeeds',
+        name: "If payout-mia is called after all blocks are redeemed, it's successful",
         async fn(chain: Chain, accounts: Map<string, Account>) {
             let deployer = accounts.get('deployer')!
             let wallet_1 = accounts.get('wallet_1')!
@@ -189,11 +189,19 @@ export async function payoutAfterAllRedeemed() {
                 ),
             ])
 
-            console.log(block.receipts[0].result)
-            console.log(block.receipts[1].result)
-            console.log(block.receipts[2].result)
-            console.log(block.receipts[3].result)
-            console.log(block.receipts[4].result)
+            block.receipts[0].result.expectOk().expectBool(true)
+            block.receipts[1].result.expectOk().expectBool(true)
+
+            assertEquals(
+                block.receipts[2].result,
+                '(ok {blockHeight: u1, blocksWon: [u152], participantIds: [u1, u2, u3, u4, u5, u6, u7, u8, u9], totalMiaWon: u250000, totalStx: u45000000})'
+            )
+            assertEquals(
+                block.receipts[3].result,
+                '(ok {hasMined: true, lastBlockToCheck: u301, nextBlockToCheck: u153, requiredPayouts: u1, sendManyIds: [u1, u2, u3, u4, u5, u6, u7, u8, u9]})'
+            )
+
+            block.receipts[4].result.expectOk().expectUint(4)
         },
     })
 }
