@@ -7,9 +7,9 @@ import {
 } from "https://deno.land/x/clarinet@v0.14.0/index.ts";
 import { assertEquals } from "https://deno.land/std@0.90.0/testing/asserts.ts";
 
-// =======================================================
+//=======================================================
 //             ACTIVATE CITYCOIN-CORE CONTRACT
-// =======================================================
+//=======================================================
 
 Clarinet.test({
   name: "Activate citycoin-core contract",
@@ -783,7 +783,7 @@ Clarinet.test({
     );
     assertEquals(
       block.receipts[2].result,
-      "(ok {hasMined: true, lastBlockChecked: u151, nextBlockToCheck: u302, requiredPayouts: u0, sendManyIds: []})"
+      "(ok {hasMined: true, lastBlockToCheck: u301, nextBlockToCheck: u152, requiredPayouts: u0, sendManyIds: []})"
     );
   },
 });
@@ -850,7 +850,7 @@ Clarinet.test({
     );
     assertEquals(
       block.receipts[2].result,
-      "(ok {hasMined: true, lastBlockChecked: u0, nextBlockToCheck: u0, requiredPayouts: u0, sendManyIds: []})"
+      "(ok {hasMined: true, lastBlockToCheck: u0, nextBlockToCheck: u1, requiredPayouts: u0, sendManyIds: []})"
     );
   },
 });
@@ -994,7 +994,7 @@ Clarinet.test({
       ),
     ]);
 
-    skip 150 blocks
+    // skip 150 blocks
     for (let i = 0; i < 150; i++) {
       chain.mineBlock([]);
     }
@@ -1057,7 +1057,7 @@ Clarinet.test({
       ),
     ]);
 
-    skip 150 blocks
+    // skip 150 blocks
     for (let i = 0; i < 150; i++) {
       chain.mineBlock([]);
     }
@@ -1066,7 +1066,7 @@ Clarinet.test({
       Tx.contractCall("miamipool", "mine", [types.uint(1)], wallet_1.address),
     ]);
 
-    skip 100 blocks
+    // skip 100 blocks
     for (let i = 0; i < 100; i++) {
       chain.mineBlock([]);
     }
@@ -1189,7 +1189,7 @@ Clarinet.test({
       ),
     ]);
 
-    skip 150 blocks
+    // skip 150 blocks
     for (let i = 0; i < 150; i++) {
       chain.mineBlock([]);
     }
@@ -1198,7 +1198,7 @@ Clarinet.test({
       Tx.contractCall("miamipool", "mine", [types.uint(1)], wallet_9.address),
     ]);
 
-    skip 100 blocks
+    // skip 100 blocks
     for (let i = 0; i < 100; i++) {
       chain.mineBlock([]);
     }
@@ -1329,7 +1329,7 @@ Clarinet.test({
       ),
     ]);
 
-    skip 150 blocks
+    // skip 150 blocks
     for (let i = 0; i < 150; i++) {
       chain.mineBlock([]);
     }
@@ -1338,12 +1338,12 @@ Clarinet.test({
       Tx.contractCall("miamipool", "mine", [types.uint(1)], wallet_9.address),
     ]);
 
-    skip 100 blocks
+    // skip 100 blocks
     for (let i = 0; i < 100; i++) {
       chain.mineBlock([]);
     }
 
-    try claim next 150 blocks
+    // try claim next 150 blocks
     for (let i = 0; i < 150; i++) {
       chain.mineBlock([
         Tx.contractCall(
@@ -1387,6 +1387,6 @@ Clarinet.test({
   },
 });
 
-// =======================================================
+//=======================================================
 //                    PAYOUT MIA
-// =======================================================
+//=======================================================
