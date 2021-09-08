@@ -1,0 +1,16 @@
+name: Contracts
+on: push
+
+jobs:
+  clarinet:
+    runs-on: ubuntu-latest
+    container:
+      image: hirosystems/clarinet
+    steps: 
+      - name: checkout code
+        uses: actions/checkout@v2
+      - run: cd packages/onchain
+      - name: check contract syntax
+        run: clarinet check
+      - name: run tests
+        run: clarinet test
