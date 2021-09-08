@@ -1526,14 +1526,5 @@ Clarinet.test({
     console.log(block.receipts[2].result);
     console.log(block.receipts[3].result);
     console.log(block.receipts[4].result);
-
-    // assertEquals(
-    //   block.receipts[2].result,
-    //   "(ok {blockHeight: u1, blocksWon: [u152], participantIds: [u1, u2, u3, u4, u5, u6, u7, u8, u9], totalMiaWon: u250000, totalStx: u45000000})"
-    // );
-    // assertEquals(
-    //   block.receipts[3].result,
-    //   "(ok {hasMined: true, lastBlockToCheck: u301, nextBlockToCheck: u153, requiredPayouts: u0, sendManyIds: []})"
-    // );
   },
 });
