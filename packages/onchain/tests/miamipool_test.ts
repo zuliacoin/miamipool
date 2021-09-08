@@ -35,7 +35,11 @@ import {
     claimOnClaimableBlock,
     claimAfterAllChecked,
 } from './miamipool/can-claim.ts'
-import { payoutAfterAllRedeemed } from './miamipool/payout.ts'
+import {
+    payoutBeforeMiningStarts,
+    payoutAfterAllRedeemed,
+    payoutAfterAllPaidOut,
+} from './miamipool/payout.ts'
 
 // activateCitycoin()
 
@@ -70,4 +74,6 @@ import { payoutAfterAllRedeemed } from './miamipool/payout.ts'
 // claimOnClaimableBlock()
 // claimAfterAllChecked()
 
+payoutBeforeMiningStarts()
 payoutAfterAllRedeemed()
+payoutAfterAllPaidOut()

@@ -181,7 +181,6 @@
                 })
             )))
         )
-        ;; {to: (get participant participant), memo: none, amount: (* totalMiaWon (/ contributionAmount totalStx))}
         (/ contributionAmount totalStx)
         {to: (get participant participant), memo: none, amount: (/ (* totalMiaWon contributionAmount) totalStx) }
 
@@ -209,8 +208,6 @@
         )
     )
 )
-
-;; done... i think?
 (define-private (is-round-expired (id uint))
     (let
         (
@@ -246,7 +243,6 @@
                 sendManyIds: (list),
             })
         )
-        ;; check if initialising first round
         (if (is-eq roundId u0)
             false
             (asserts! (get hasMined (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND))) (err ERR_MINING_NOT_STARTED))
@@ -288,8 +284,7 @@
                             (if (is-eq (len roundsParticipated) u512)
                                 (begin
                                     (var-set firstElement (unwrap-panic (element-at roundsParticipated u0)))
-                                    (filter is-not-first-element roundsParticipated)
-                                    (unwrap-panic (as-max-len? (append roundsParticipated roundId) u512))
+                                    (unwrap-panic (as-max-len? (append (filter is-not-first-element roundsParticipated) roundId) u512))
                                 )
                                 (unwrap-panic (as-max-len? (append roundsParticipated roundId) u512))
                             )
