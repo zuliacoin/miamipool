@@ -47,9 +47,9 @@
 
 (define-data-var feePrincipals (list 3 {principal: principal, percent: uint}) 
     (list
-        {principal: 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66, percent: u33}
-        {principal: 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66, percent: u33}
-        {principal: 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66, percent: u33}
+        {principal: 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5, percent: u50}
+        {principal: 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG, percent: u30}
+        {principal: 'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC, percent: u20}
     )
 )
 
@@ -145,7 +145,7 @@
         (indexOfId (unwrap-panic (index-of participantIds participantId)))
     )
 
-    (if (and (>= indexOfId payoutIndexOfIds) (< indexOfId payoutIndexOfIds))
+    (if (and (>= indexOfId (* payoutIndexOfIds u200)) (< indexOfId (+ (* payoutIndexOfIds u200) u200)))
         (map-set RoundsStatus {id: roundId}
             {
                 hasMined: (get hasMined roundsStatus),
@@ -156,7 +156,7 @@
             }
         )
         false
-    )
+    )   
   )
 )
 
@@ -171,8 +171,9 @@
                     id: roundId 
                 }) 
             )))
-            (totalMiaWon (unwrap-panic (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token get-balance MIA_CONTRACT_ADDRESS))))
-            
+            (totalMiaWon (unwrap-panic (as-contract 
+            (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token get-balance MIA_CONTRACT_ADDRESS)
+            )))
             (contributionAmount (get amount (unwrap-panic 
                 (map-get? Contributions { 
                     id: participantId, 
@@ -180,17 +181,22 @@
                 })
             )))
         )
-        {to: (get participant participant), memo: none, amount: (* totalMiaWon (/ contributionAmount totalStx))}
+        ;; {to: (get participant participant), memo: none, amount: (* totalMiaWon (/ contributionAmount totalStx))}
+        (/ contributionAmount totalStx)
+        {to: (get participant participant), memo: none, amount: (/ (* totalMiaWon contributionAmount) totalStx) }
+
     )
 )
 
 (define-private (calculate-fee (feePrincipalAndPercent {principal: principal, percent: uint}))
     (let
-        ((totalMiaWon (unwrap-panic (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token get-balance MIA_CONTRACT_ADDRESS)))))
-        {to: (get principal feePrincipalAndPercent), memo: none, amount: (/ (* totalMiaWon (get percent feePrincipalAndPercent)) u100)}
+        (
+            (totalMiaWon (unwrap-panic (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token get-balance MIA_CONTRACT_ADDRESS))))
+            (percent (get percent feePrincipalAndPercent))
+        )
+        {to: (get principal feePrincipalAndPercent), memo: none, amount: (* percent (/ (* (/ totalMiaWon u100) u2) u100))}
     )
 )
-
 
 (define-private (payout-fee)
     (let
@@ -489,7 +495,6 @@
                 (blocksWon (get blocksWon rounds))
                 (participantIds (get participantIds rounds))
                 (requiredPayout (get requiredPayouts roundsStatus))
-                (sendManyIds (get sendManyIds roundsStatus))
             )
             (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
             (asserts! (not (is-eq requiredPayout (+ (/ (len participantIds) u150) u1 ))) (err ERR_ALL_PARTICIPANTS_PAID))
@@ -503,18 +508,21 @@
             (var-set roundIdToCheck roundId)
             (filter is-in-next-200-ids participantIds)
             (let
-                ((sendManyList (map calculate-return sendManyIds)))
+                (
+                    (sendManyIds (get sendManyIds (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND))))
+                    (sendManyList (map calculate-return sendManyIds))
+                )
                 (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many sendManyList)))
-            )
-
-            (map-set RoundsStatus {id: roundId}
+                (map-set RoundsStatus {id: roundId}
                     {
                         hasMined: (get hasMined roundsStatus),
+
                         nextBlockToCheck: (get nextBlockToCheck roundsStatus),
                         lastBlockToCheck: (get lastBlockToCheck roundsStatus),
                         requiredPayouts: (+ requiredPayout u1),
                         sendManyIds: sendManyIds
                     }
+                 )
             )
         )
         (ok true)
