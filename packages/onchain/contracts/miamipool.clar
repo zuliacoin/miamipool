@@ -9,6 +9,8 @@
 
 ;;      ////    ERRORS    \\\\      ;;
 
+;; needa update these
+
 ;; RBAC (1xx)
 (define-constant ERR_INVALID_AMOUNT u100)
 (define-constant ERR_ID_NOT_FOUND u101)
@@ -28,8 +30,6 @@
 (define-constant ERR_ALL_PARTICIPANTS_PAID u209)
 (define-constant ERR_MINING_NOT_STARTED u210)
 (define-constant ERR_ALREADY_MINED u211)
-(define-constant ERR_ROUND_HAS_NOT_EXPIRED u212)
-
 
 (define-data-var participantIdTip uint u0)
 
@@ -91,7 +91,7 @@
 )
 
 ;; stores up to last 512 rounds a participant was in
-(define-map Participants
+(define-map ParticipantsRoundHistory
     { id: uint }
 	{ roundsParticipated: (list 512 uint) }
 )
@@ -115,7 +115,7 @@
     participantId
     (let
       ((newId (+ u1 (var-get participantIdTip))))
-      (map-set Participants {id: newId} {roundsParticipated: (list)})
+      (map-set ParticipantsRoundHistory {id: newId} {roundsParticipated: (list)})
       (map-set IdToPrincipal {id: newId} {participant: participant})
       (map-set PrincipalToId {participant: participant} {id: newId})
       (var-set participantIdTip newId)
@@ -226,7 +226,6 @@
     (let 
         (
             (roundId (var-get lastKnownRoundId))
-            (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
             (newRoundKeyTuple { id: (+ roundId u1) })
             (newRoundValueTuple {
                 totalStx: u0,
@@ -244,16 +243,16 @@
                 sendManyIds: (list),
             })
         )
-
-        (begin
-            (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
-            (var-set lastKnownRoundId (+ roundId u1))
-            (asserts! (map-insert Rounds newRoundKeyTuple newRoundValueTuple) (err u0))
-            (asserts! (map-insert RoundsStatus newRoundKeyTuple newRoundStatusValueTuple) (err u0))
-            (ok true)
+        ;; check if initialising first round
+        (if (is-eq roundId u0)
+            false
+            (asserts! (get hasMined (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND))) (err ERR_MINING_NOT_STARTED))
         )
-
-    )
+        (var-set lastKnownRoundId (+ roundId u1))
+        (asserts! (map-insert Rounds newRoundKeyTuple newRoundValueTuple) (err u0))
+        (asserts! (map-insert RoundsStatus newRoundKeyTuple newRoundStatusValueTuple) (err u0))
+        (ok true)  
+    )      
 )
 
 (define-public (add-funds (amount uint))
@@ -263,7 +262,7 @@
                 (address tx-sender)
                 (roundId (var-get lastKnownRoundId))
                 (participantId (get-or-create-participant-id address))
-                (participant (unwrap-panic (map-get? Participants {id: participantId})))
+                (participant (unwrap-panic (map-get? ParticipantsRoundHistory {id: participantId})))
                 (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
             )
 
@@ -276,7 +275,7 @@
                 (map-set Contributions {id: participantId, round: roundId} {amount: amount})
             )
 
-            (map-set Participants {id: participantId}
+            (map-set ParticipantsRoundHistory {id: participantId}
                 {
                     roundsParticipated:
                     (let
@@ -321,7 +320,7 @@
                 (roundId (var-get lastKnownRoundId))
                 (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                 (participantId (unwrap! (get id (map-get? PrincipalToId { participant: tx-sender })) (err ERR_ID_NOT_FOUND)))
-                (participant (unwrap-panic (map-get? Participants {id: participantId})))
+                (participant (unwrap-panic (map-get? ParticipantsRoundHistory {id: participantId})))
                 (balance (unwrap-panic (get amount (map-get? Contributions { id: participantId, round: roundId }))))
             )
             (asserts! (is-some (index-of (get participantIds rounds) participantId)) (err ERR_ID_NOT_IN_ROUND))
@@ -332,7 +331,7 @@
             (try! (as-contract (stx-transfer? amount MIA_CONTRACT_ADDRESS tx-sender)))
 
             (map-set Contributions {id: participantId, round: roundId} {amount: (- balance amount)})
-            (map-set Participants {id: participantId}
+            (map-set ParticipantsRoundHistory {id: participantId}
                 {
                     roundsParticipated:
                     (if (>= amount balance)
@@ -373,19 +372,23 @@
                 (hasMined (get hasMined roundsStatus))
             )
             (asserts! (not hasMined) (err ERR_ALREADY_MINED))
-            (asserts! (is-round-expired roundId) (err ERR_ROUND_HAS_NOT_EXPIRED))
+            (asserts! (is-round-expired roundId) (err ERR_CANNOT_MINE_IF_ROUND_ACTIVE))
         )
-        (if (< (stx-get-balance MIA_CONTRACT_ADDRESS) u150)
-            (map-set RoundsStatus {id: roundId} 
-                {
-                    hasMined: true,
-                    lastBlockChecked: u0,
-                    lastBlockToCheck: u0,
-                    indexOfBlockToClaim: u0,
-                    requiredPayouts: u0,
-                    sendManyIds: (list)
-                }
+        (if (< (stx-get-balance MIA_CONTRACT_ADDRESS) u1500000)
+            (begin
+                (map-set RoundsStatus {id: roundId} 
+                    {
+                        hasMined: true,
+                        lastBlockChecked: u0,
+                        lastBlockToCheck: u0,
+                        indexOfBlockToClaim: u0,
+                        requiredPayouts: u0,
+                        sendManyIds: (list)
+                    }
+                )
+                (ok (start-round))
             )
+
             (let
                 (
                     (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
@@ -408,7 +411,6 @@
                         )
                     )
                 )
-                (asserts! (is-round-expired roundId) (err ERR_CANNOT_MINE_IF_ROUND_ACTIVE))
                 (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 mine-many miningBlocksList))
                 (map-set RoundsStatus {id: roundId}
                     {
@@ -420,9 +422,9 @@
                         sendManyIds: (list)
                     }
                 )
+                (ok (start-round))
             )
         )
-        (ok true)
     )
 )
 
@@ -438,7 +440,7 @@
         )
         (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
         (asserts! (>= block-height (+ lastBlockChecked u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
-        (asserts! (not (>= block-height lastBlockToCheck)) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
+        (asserts! (not (>= lastBlockChecked lastBlockToCheck)) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
 
         (if isWinner
             (begin 
@@ -561,16 +563,16 @@
 
 ;;      ////    READ-ONLY    \\\\     ;;
 
-(define-read-only (get-participant (id uint))
-    (ok (map-get? Participants { id: id }))
+(define-read-only (get-participant-round-history (id uint))
+    (ok (unwrap-panic (map-get? ParticipantsRoundHistory { id: id })))
 )
 
-(define-read-only (get-participant-id (participant principal))
-    (ok (get id (map-get? PrincipalToId { participant: participant })))
+(define-read-only (principal-to-id (participant principal))
+    (ok (unwrap-panic (get id (map-get? PrincipalToId { participant: participant }))))
 )
 
-(define-read-only (get-participant-address (id uint))
-    (ok (get participant (map-get? IdToPrincipal { id: id })))
+(define-read-only (id-to-principal (id uint))
+    (ok (unwrap-panic (get participant (map-get? IdToPrincipal { id: id }))))
 )
 
 (define-read-only (get-min-contribution)
@@ -578,18 +580,19 @@
 )
 
 (define-read-only (get-contribution (id uint) (round uint))
-    (ok (get amount (map-get? Contributions { id: id, round: round })))
+    (ok (unwrap-panic (get amount (map-get? Contributions { id: id, round: round }))))
 )
 
 (define-read-only (get-current-round-id)
     (ok (var-get lastKnownRoundId))
 )
 
-;; in progress
-;; if none, return (ok none) [don't unwrap]
-;; if valid, return (ok (tuple... )) [requires unwrap]
 (define-read-only (get-round (id uint))
-    (ok (map-get? Rounds { id: id }))
+    (ok (unwrap! (map-get? Rounds { id: id }) (err ERR_ROUND_NOT_FOUND)))
+)
+
+(define-read-only (get-round-status (id uint))
+    (ok (unwrap! (map-get? RoundsStatus { id: id }) (err ERR_ROUND_NOT_FOUND)))
 )
 
 ;;   ||||     D E C E N T R A L I S E D .    G L O B A L .    S O V E R E I G N .      ||||
@@ -598,3 +601,5 @@
 
 ;; (contract-call? .citycoin-auth  initialize-contracts 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1)
 ;; (contract-call? .citycoin-core-v1 register-user none)
+;; (contract-call? .miamipool start-round)
+;; (contract-call? .miamipool get-round u1)
