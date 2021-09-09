@@ -270,11 +270,11 @@
 
             (try! (stx-transfer? amount address MIA_CONTRACT_ADDRESS))
             (match (get amount (map-get? Contributions { id: participantId, round: roundId })) balance
-                (map-set Contributions {id: participantId, round: roundId} {amount: (+ balance amount)})
-                (map-set Contributions {id: participantId, round: roundId} {amount: amount})
+                (asserts! (map-set Contributions {id: participantId, round: roundId} {amount: (+ balance amount)}) (err u0))
+                (asserts! (map-set Contributions {id: participantId, round: roundId} {amount: amount}) (err u0))
             )
 
-            (map-set ParticipantsRoundHistory {id: participantId}
+            (asserts! (map-set ParticipantsRoundHistory {id: participantId}
                 {
                     roundsParticipated:
                     (let
@@ -292,8 +292,8 @@
            
                     )                  
                 }
-            )
-            (map-set Rounds {id: roundId}
+            ) (err u0))
+            (asserts! (map-set Rounds {id: roundId}
                 {
                     totalStx: (+ (get totalStx rounds) amount),
                     participantIds: 
@@ -305,7 +305,7 @@
                     totalMiaWon: (get totalMiaWon rounds),
                     blockHeight: (get blockHeight rounds)
                 }
-            )
+            ) (err u0))
             (ok true)
         )
     )
@@ -329,8 +329,8 @@
 
             (try! (as-contract (stx-transfer? amount MIA_CONTRACT_ADDRESS address)))
 
-            (map-set Contributions {id: participantId, round: roundId} {amount: (- balance amount)})
-            (map-set ParticipantsRoundHistory {id: participantId}
+            (asserts! (map-set Contributions {id: participantId, round: roundId} {amount: (- balance amount)}) (err u0))
+            (asserts! (map-set ParticipantsRoundHistory {id: participantId}
                 {
                     roundsParticipated:
                     (if (>= amount balance)
@@ -341,8 +341,8 @@
                         (get roundsParticipated participant)
                     ),
                 }
-            )
-            (map-set Rounds {id: roundId}
+            ) (err u0))
+            (asserts! (map-set Rounds {id: roundId}
                 {
                     totalStx: (- (get totalStx rounds) amount),
                     participantIds: 
@@ -357,7 +357,7 @@
                     totalMiaWon: (get totalMiaWon rounds),
                     blockHeight: (get blockHeight rounds)
                 }
-            )
+            ) (err u0))
             (ok true)
         )
     )
@@ -375,7 +375,7 @@
         )
         (if (< (stx-get-balance MIA_CONTRACT_ADDRESS) u1500000)
             (begin
-                (map-set RoundsStatus {id: roundId} 
+                (asserts! (map-set RoundsStatus {id: roundId} 
                     {
                         hasMined: true,
                         nextBlockToCheck: u1,
@@ -383,7 +383,7 @@
                         requiredPayouts: u0,
                         sendManyIds: (list)
                     }
-                )
+                ) (err u0))
                 (ok (start-round))
             )
 
@@ -410,7 +410,7 @@
                     )
                 )
                 (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 mine-many miningBlocksList)))
-                (map-set RoundsStatus {id: roundId}
+                (asserts! (map-set RoundsStatus {id: roundId}
                     {
                         hasMined: true,
                         nextBlockToCheck: block-height,
@@ -418,7 +418,7 @@
                         requiredPayouts: u0,
                         sendManyIds: (list)
                     }
-                )
+                ) (err u0))
                 (ok (start-round))
             )
         )
@@ -442,7 +442,7 @@
         (if isWinner
             (begin 
                 (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 claim-mining-reward nextBlockToCheck)))
-                (map-set Rounds {id: roundId}
+                (asserts! (map-set Rounds {id: roundId}
                 
                     {
                         totalStx: (get totalStx rounds),
@@ -451,8 +451,8 @@
                         totalMiaWon: (unwrap-panic (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token get-balance MIA_CONTRACT_ADDRESS))),
                         blockHeight: (get blockHeight rounds)
                     }
-                )
-                (map-set RoundsStatus {id: roundId}
+                ) (err u0))
+                (asserts! (map-set RoundsStatus {id: roundId}
                     {
                         hasMined: (get hasMined roundsStatus),
                         nextBlockToCheck: (+ nextBlockToCheck u1),
@@ -460,11 +460,11 @@
                         requiredPayouts: (get requiredPayouts roundsStatus),
                         sendManyIds: (get sendManyIds roundsStatus)
                     }
-                )
+                ) (err u0))
                 (ok isWinner)
             )
             (begin
-                (map-set RoundsStatus {id: roundId}
+                (asserts! (map-set RoundsStatus {id: roundId}
                     {
                         hasMined: (get hasMined roundsStatus),
                         nextBlockToCheck: (+ nextBlockToCheck u1),
@@ -472,7 +472,7 @@
                         requiredPayouts: (get requiredPayouts roundsStatus),
                         sendManyIds: (get sendManyIds roundsStatus)
                     }
-                )
+                ) (err u0))
                 (ok isWinner)
             )
         
@@ -508,7 +508,7 @@
                     (sendManyList (map calculate-return sendManyIds))
                 )
                 (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many sendManyList)))
-                (map-set RoundsStatus {id: roundId}
+                (asserts! (map-set RoundsStatus {id: roundId}
                     {
                         hasMined: (get hasMined roundsStatus),
 
@@ -517,7 +517,7 @@
                         requiredPayouts: (+ requiredPayout u1),
                         sendManyIds: sendManyIds
                     }
-                 )
+                 ) (err u0))
             )
         )
         (ok true)
