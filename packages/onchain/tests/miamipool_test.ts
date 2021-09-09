@@ -40,40 +40,43 @@ import {
     payoutAfterAllRedeemed,
     payoutAfterAllPaidOut,
 } from './miamipool/payout.ts'
+import { testMaxParticipants } from './miamipool/max-participants.ts'
 
-activateCitycoin()
+// activateCitycoin();
 
-startRoundAndInit()
-startRoundToCorrectValues()
-startRoundWhenPrevRoundIsMining()
-startRoundAfterPrevRoundMined()
+// startRoundAndInit();
+// startRoundToCorrectValues();
+// startRoundWhenPrevRoundIsMining();
+// startRoundAfterPrevRoundMined();
 
-addFundsAddToRound()
-addFundsAndIncreaseContributedStx()
-addFundsAndIncreaseRoundStx()
-addFundsAndAddToHistory()
-addFundsUnderMin()
-addFundsToExpiredRound()
+// addFundsAddToRound();
+// addFundsAndIncreaseContributedStx();
+// addFundsAndIncreaseRoundStx();
+// addFundsAndAddToHistory();
+// addFundsUnderMin();
+// addFundsToExpiredRound();
 
-withdrawAndDecreaseStx()
-withdrawAndDecreaseRoundStx()
-withdrawMoreThanBalance()
-withdrawWithoutContributing()
-withdrawAndRemoveHistory()
-withdrawAndRemoveFromRound()
-withdrawAfterRoundExpired()
+// withdrawAndDecreaseStx();
+// withdrawAndDecreaseRoundStx();
+// withdrawMoreThanBalance();
+// withdrawWithoutContributing();
+// withdrawAndRemoveHistory();
+// withdrawAndRemoveFromRound();
+// withdrawAfterRoundExpired();
 
-mineRoundSuccessfully()
-mineWithoutMin()
-mineWhenAlreadyMined()
-mineWhenRaising()
+// mineRoundSuccessfully();
+// mineWithoutMin();
+// mineWhenAlreadyMined();
+// mineWhenRaising();
 
-claimBeforeMining()
-claimBeforeMaturity()
-claimWithoutEnoughStx()
-claimOnClaimableBlock()
-claimAfterAllChecked()
+// claimBeforeMining();
+// claimBeforeMaturity();
+// claimWithoutEnoughStx();
+// claimOnClaimableBlock();
+// claimAfterAllChecked();
 
-payoutBeforeMiningStarts()
-payoutAfterAllRedeemed()
-payoutAfterAllPaidOut()
+// payoutBeforeMiningStarts();
+// payoutAfterAllRedeemed();
+// payoutAfterAllPaidOut();
+
+testMaxParticipants()
