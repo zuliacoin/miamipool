@@ -1,7 +1,7 @@
 import styles from '../styles/Home.module.css'
 import { useConnect, userSessionState } from '../lib/auth'
 import { useAtom } from 'jotai'
-import { StacksMainnet } from '@stacks/network'
+import { StacksTestnet } from '@stacks/network'
 import { useEffect, useState } from 'react'
 import { useConnect as syConnect } from '@syvita/connect-react'
 import Transaction from '../components/Transaction'
@@ -21,15 +21,20 @@ export default function Home() {
     const { handleOpenAuth } = useConnect()
     const { handleSignOut } = useConnect()
     const [userSession] = useAtom(userSessionState)
+    const [currentRoundId, setCurrentRoundId] = useState()
+    const [currentRound, setCurrentRound] = useState()
 
-    const [amount, setAmount] = useState(0)
-    const [price, setPrice] = useState()
-    const [remaining, setRemaining] = useState(0)
+    const [addAmount, setAddAmount] = useState(0)
+    const [withdrawAmount, setWithdrawAmount] = useState(0)
+    const [mineRoundId, setMineRoundId] = useState(0)
+    const [claimRoundId, setClaimRoundId] = useState(0)
+    const [payoutRoundId, setPayoutRoundId] = useState(0)
+
     const [txId, setTxId] = useState()
 
     useEffect(() => {
-        getPrice().then((result) => setPrice(result))
-        getRemaining().then((result) => setRemaining(result.toLocaleString()))
+        getCurrentRoundId().then((result) => setCurrentRoundId(result))
+        getCurrentRound().then((result) => setCurrentRound(result))
     }, [])
 
     let STXAddress = ''
@@ -40,65 +45,129 @@ export default function Home() {
 
     const { doContractCall } = syConnect()
 
-    const NETWORK = new StacksMainnet()
+    const NETWORK = new StacksTestnet()
     const GENESIS_CONTRACT_ADDRESS = 'SP000000000000000000002Q6VF78'
-    const CONTRACT_ADDRESS = 'SP30G5580JNEJ6GRKKWPBY3JGKDBQXG57VV9PZAE4'
-    const CONTRACT_NAME = 'homely-lime-bass'
+    const CONTRACT_ADDRESS = 'ST2J2ASASFAS80NGCVP2CVKDCSPR2GF2DQG9V5E3H'
+    const CONTRACT_NAME = 'marvellous-bronze-bass'
 
-    async function buyMIA() {
+    async function addFunds() {
+        let amount = uintCV(Math.floor(parseFloat(addAmount.trim()) * 1000000))
         await doContractCall({
             contractAddress: CONTRACT_ADDRESS,
             contractName: CONTRACT_NAME,
-            functionName: 'buy-mia',
-            functionArgs: [uintCV(amount)],
+            functionName: 'add-funds',
+            functionArgs: [amount],
             postConditionMode: PostConditionMode.Deny,
             postConditions: [
                 makeStandardSTXPostCondition(
                     STXAddress,
                     FungibleConditionCode.Equal,
-                    uintCV(amount * price).value
-                ),
-                makeContractFungiblePostCondition(
-                    CONTRACT_ADDRESS,
-                    CONTRACT_NAME,
-                    FungibleConditionCode.Equal,
-                    uintCV(amount).value,
-                    createAssetInfo(
-                        'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27',
-                        'miamicoin-token',
-                        'miamicoin'
-                    )
+                    amount.value
                 ),
             ],
             network: NETWORK,
-            onFinish: (result) => {
-                setTxId(result.txId)
-            },
         })
     }
 
-    async function getPrice() {
+    async function withdrawFunds() {
+        await doContractCall({
+            contractAddress: CONTRACT_ADDRESS,
+            contractName: CONTRACT_NAME,
+            functionName: 'withdraw-funds',
+            functionArgs: [uintCV(withdrawAmount)],
+            postConditionMode: PostConditionMode.Deny,
+            postConditions: [
+                makeStandardSTXPostCondition(
+                    STXAddress,
+                    FungibleConditionCode.Equal,
+                    uintCV(withdrawAmount).value
+                ),
+            ],
+            network: NETWORK,
+        })
+    }
+
+    async function startRound() {
+        await doContractCall({
+            contractAddress: CONTRACT_ADDRESS,
+            contractName: CONTRACT_NAME,
+            functionName: 'start-round',
+            functionArgs: [],
+            postConditionMode: PostConditionMode.Allow,
+            network: NETWORK,
+        })
+    }
+
+    async function mine() {
+        await doContractCall({
+            contractAddress: CONTRACT_ADDRESS,
+            contractName: CONTRACT_NAME,
+            functionName: 'start-round',
+            functionArgs: [uintCV(mineRoundId).value],
+            postConditionMode: PostConditionMode.Allow,
+            network: NETWORK,
+        })
+    }
+
+    async function claimMiningReward() {
+        await doContractCall({
+            contractAddress: CONTRACT_ADDRESS,
+            contractName: CONTRACT_NAME,
+            functionName: 'claim-mining-reward',
+            functionArgs: [uintCV(claimRoundId).value],
+            postConditionMode: PostConditionMode.Allow,
+            network: NETWORK,
+        })
+    }
+
+    async function payout() {
+        await doContractCall({
+            contractAddress: CONTRACT_ADDRESS,
+            contractName: CONTRACT_NAME,
+            functionName: 'claim-mining-reward',
+            functionArgs: [uintCV(payoutRoundId).value],
+            postConditionMode: PostConditionMode.Allow,
+            network: NETWORK,
+        })
+    }
+
+    async function getCurrentRound() {
+        let result = await callReadOnlyFunction({
+            contractAddress: CONTRACT_ADDRESS,
+            contractName: CONTRACT_NAME,
+            functionName: 'get-round',
+            functionArgs: [uintCV(1)],
+            network: NETWORK,
+            senderAddress: GENESIS_CONTRACT_ADDRESS,
+        })
+
+        result = result.value.data
+        const json = JSON.stringify(result, (key, value) =>
+            typeof value === 'bigint' ? value.toString() + 'n' : value
+        )
+
+        console.log(result.participantIds.list)
+        // do for loop to grab list values
+        return {
+            blockHeight: parseInt(result.blockHeight.value),
+            blocksWon: result.blocksWon.list,
+            participants: result.participantIds.list,
+            totalMiaWon: parseInt(result.totalMiaWon.value),
+            totalStx: parseInt(result.totalStx.value),
+        }
+    }
+
+    async function getCurrentRoundId() {
         const result = await callReadOnlyFunction({
             contractAddress: CONTRACT_ADDRESS,
             contractName: CONTRACT_NAME,
-            functionName: 'get-price',
+            functionName: 'get-current-round-id',
             functionArgs: [],
             network: NETWORK,
             senderAddress: GENESIS_CONTRACT_ADDRESS,
         })
-        return parseFloat(result.value.value)
-    }
-
-    async function getRemaining() {
-        const result = await callReadOnlyFunction({
-            contractAddress: CONTRACT_ADDRESS,
-            contractName: CONTRACT_NAME,
-            functionName: 'get-remaining',
-            functionArgs: [],
-            network: NETWORK,
-            senderAddress: GENESIS_CONTRACT_ADDRESS,
-        })
-        return parseInt(result.value.value.value)
+        console.log('Current Round Id ' + result.value.value)
+        return parseInt(result.value.value)
     }
 
     return txId ? (
@@ -108,30 +177,60 @@ export default function Home() {
             <h1 className={styles.swap}>Swap</h1>
             <div className={styles.buy}>
                 <img src="/mia.svg" height="64" width="64" alt="MIA Logo"></img>
-                <h1>Buy $MIA from Syvita</h1>
+                <h1>Join MiamiPool</h1>
                 {userSession.isUserSignedIn() && (
                     <>
-                        <input
-                            onChange={(e) => setAmount(e.target.value)}
-                        ></input>
-                        <label className={styles.number}>
-                            Number of MiamiCoin
-                        </label>
-                        <label className={styles.total}>
-                            {(amount * (price / 1000000)).toFixed(2)} STX
-                        </label>
-                        <div>
-                            <img
-                                src="/eye.svg"
-                                height="14"
-                                width="16"
-                                alt="Eye"
-                            ></img>
-                            {price / 1000000} STX/MIA | {remaining} MIA left
-                        </div>
-                        <button onClick={buyMIA} className={styles.button}>
-                            Buy
+                        <h1>Current Round: {currentRoundId}</h1>
+                        {/* {currentRound && currentRound.participants} */}
+                        {currentRound && currentRound.totalStx / 1000000}
+
+                        <button className={styles.button} onClick={startRound}>
+                            Start Round
                         </button>
+                        <input
+                            onWheel={(e) => e.target.blur()}
+                            type="number"
+                            name="add funds"
+                            placeholder="Add amount in STX"
+                            onChange={(event) =>
+                                setAddAmount(event.target.value)
+                            }
+                        ></input>
+                        <button className={styles.button} onClick={addFunds}>
+                            Add Funds
+                        </button>
+
+                        <input
+                            onWheel={(e) => e.target.blur()}
+                            type="number"
+                            name="Withdraw funds"
+                            placeholder="Withdraw STX"
+                            onChange={(event) =>
+                                setWithdrawAmount(event.target.value)
+                            }
+                        ></input>
+                        <button
+                            className={styles.button}
+                            onClick={withdrawFunds}
+                        >
+                            Withdraw Funds
+                        </button>
+
+                        <button className={styles.button} onClick={mine}>
+                            Mine
+                        </button>
+
+                        <button
+                            className={styles.button}
+                            onClick={claimMiningReward}
+                        >
+                            Claim Mining Reward
+                        </button>
+
+                        <button className={styles.button} onClick={payout}>
+                            Payout
+                        </button>
+
                         <button
                             className={styles.signOut}
                             onClick={handleSignOut}
@@ -143,13 +242,15 @@ export default function Home() {
                 {!userSession.isUserSignedIn() && (
                     <>
                         <div>
-                            <img
-                                src="/eye.svg"
-                                height="14"
-                                width="14"
-                                alt="Eye"
-                            ></img>
-                            {price / 1000000} STX/MIA | {remaining} MIA left
+                            <p className={styles.snippet}>
+                                Welcome to MiamiPool a completely trustless and
+                                decentralized mining pool for earning $MIA!
+                                Connect your wallet to contribute STX and mine
+                                for $MiamiCoin with a collection of others, to
+                                increase your chances of winning. For more
+                                information you can view the MiamiPool
+                                <a href="I FORGOR"> docs</a>.
+                            </p>
                         </div>
                         <button
                             className={styles.button}

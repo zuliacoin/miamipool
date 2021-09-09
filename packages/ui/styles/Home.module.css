@@ -7,7 +7,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: 100px;
+    margin-top: 50px;
     min-width: 250px;
 }
 
@@ -56,11 +56,21 @@
     border-radius: 10px;
     background-color: black;
     width: 400px;
-    height: 64px;
+    height: 50px;
+    margin-top: 10px;
     outline: 0px;
+    padding-left: 5px;
     font-size: larger;
-    padding-top: 20px;
-    padding-left: 17.5px;
+}
+
+.buy input::placeholder {
+    text-align: center;
+}
+
+.buy input[type='number']::-webkit-inner-spin-button,
+.buy input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .buy div {
@@ -78,8 +88,7 @@
 .signOut {
     font-family: Inter;
     font-weight: 600;
-    position: absolute;
-    bottom: 100px;
+    margin-top: 10px;
     text-transform: uppercase;
     padding: 14px 26px;
     letter-spacing: 0.1em;
@@ -119,4 +128,35 @@
     font-size: small;
     margin-top: 30px;
     margin-right: 235px;
+}
+
+.snippet {
+    font-size: 17px;
+    text-align: center;
+    margin-right: 35%;
+    margin-left: 35%;
+    line-height: 25px;
+    color: #ffffff;
+}
+
+@media (max-width: 1169px) {
+    .snippet {
+        font-size: 17px;
+        text-align: center;
+        margin-right: 25%;
+        margin-left: 25%;
+        line-height: 25px;
+        color: #ffffff;
+    }
+}
+
+@media (max-width: 700px) {
+    .snippet {
+        font-size: 17px;
+        text-align: center;
+        margin-right: 10%;
+        margin-left: 10%;
+        line-height: 25px;
+        color: #ffffff;
+    }
 }
