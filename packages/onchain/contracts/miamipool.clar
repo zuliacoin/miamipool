@@ -566,10 +566,3 @@
 ;;   ||||     D E C E N T R A L I S E D .    G L O B A L .    S O V E R E I G N .      ||||
 
 ;;                    ||||     S Y V I T A    G U I L D     ||||
-
-;; (contract-call? .citycoin-auth  initialize-contracts 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1)
-;; (contract-call? .citycoin-core-v1 register-user none)
-;; (contract-call? .miamipool start-round)
-;; (contract-call? .miamipool get-round u1)
-;; (contract-call? .miamipool add-funds u10000000)
-;; (contract-call? .miamipool withdraw-funds u5000000)
