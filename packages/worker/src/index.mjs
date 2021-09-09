@@ -5,21 +5,21 @@ import isOdd from 'is-odd'
 export { Counter } from './counter.mjs'
 
 export default {
-  async fetch(request, env) {
-    try {
-      return await handleRequest(request, env)
-    } catch (e) {
-      return new Response(e.message)
-    }
-  },
+    async fetch(request, env) {
+        try {
+            return await handleRequest(request, env)
+        } catch (e) {
+            return new Response(e.message)
+        }
+    },
 }
 
 async function handleRequest(request, env) {
-  let id = env.COUNTER.idFromName('A')
-  let obj = env.COUNTER.get(id)
-  let resp = await obj.fetch(request.url)
-  let count = parseInt(await resp.text())
-  let wasOdd = isOdd(count) ? 'is odd' : 'is even'
+    let id = env.COUNTER.idFromName('A')
+    let obj = env.COUNTER.get(id)
+    let resp = await obj.fetch(request.url)
+    let count = parseInt(await resp.text())
+    let wasOdd = isOdd(count) ? 'is odd' : 'is even'
 
-  return new Response(`${count} ${wasOdd}`)
+    return new Response(`${count} ${wasOdd}`)
 }

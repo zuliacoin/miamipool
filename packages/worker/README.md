@@ -6,10 +6,10 @@
 
 A template for kick starting a Cloudflare Workers project using:
 
-- Durable Objects
-- Modules (ES Modules to be specific)
-- Rollup
-- Wrangler
+-   Durable Objects
+-   Modules (ES Modules to be specific)
+-   Rollup
+-   Wrangler
 
 Worker code is in `src/`. The Durable Object `Counter` class is in `src/counter.mjs`, and the eyeball script is in `index.mjs`.
 
