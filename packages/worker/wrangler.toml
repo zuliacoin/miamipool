@@ -1,7 +1,7 @@
 name = "worker"
 type = "javascript"
-zone_id = "92b49b326b3b0fa80b5c478ce242e93e"
-account_id = "c60e829b3831ea5b11b2398ef68bda23"
+zone_id = ""
+account_id = ""
 route = ""
 workers_dev = true
 
@@ -9,4 +9,3 @@ workers_dev = true
 command = "npm install && npm run build"
 [build.upload]
 format = "service-worker"
-main = "worker.js"
