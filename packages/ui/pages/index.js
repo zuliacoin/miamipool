@@ -23,6 +23,7 @@ export default function Home() {
     const [userSession] = useAtom(userSessionState)
     const [currentRoundId, setCurrentRoundId] = useState()
     const [currentRound, setCurrentRound] = useState()
+    const [estimateSTXPerBlock, setEstimateSTXPerBlock] = useState()
 
     const [addAmount, setAddAmount] = useState(0)
     const [withdrawAmount, setWithdrawAmount] = useState(0)
@@ -35,6 +36,7 @@ export default function Home() {
     useEffect(() => {
         getCurrentRoundId().then((result) => setCurrentRoundId(result))
         getCurrentRound().then((result) => setCurrentRound(result))
+        getEstimateSTXPerBlock().then((result) => setEstimateSTXPerBlock(result))
     }, [])
 
     let STXAddress = ''
@@ -47,14 +49,16 @@ export default function Home() {
 
     const NETWORK = new StacksTestnet()
     const GENESIS_CONTRACT_ADDRESS = 'SP000000000000000000002Q6VF78'
-    const CONTRACT_ADDRESS = 'ST2J2ASASFAS80NGCVP2CVKDCSPR2GF2DQG9V5E3H'
-    const CONTRACT_NAME = 'marvellous-bronze-bass'
+    const MIAMIPOOL_CONTRACT_ADDRESS = 'ST2J2ASASFAS80NGCVP2CVKDCSPR2GF2DQG9V5E3H'
+    const MIAMIPOOL_CONTRACT_NAME = 'marvellous-bronze-bass'
+    const MIAMICOIN_CONTRACT_ADDRESS = 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A'
+    const MIAMICOIN_CONTRACT_NAME = 'citycoin-core-v4'
 
     async function addFunds() {
         let amount = uintCV(Math.floor(parseFloat(addAmount.trim()) * 1000000))
         await doContractCall({
-            contractAddress: CONTRACT_ADDRESS,
-            contractName: CONTRACT_NAME,
+            contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
+            contractName: MIAMIPOOL_CONTRACT_NAME,
             functionName: 'add-funds',
             functionArgs: [amount],
             postConditionMode: PostConditionMode.Deny,
@@ -71,8 +75,8 @@ export default function Home() {
 
     async function withdrawFunds() {
         await doContractCall({
-            contractAddress: CONTRACT_ADDRESS,
-            contractName: CONTRACT_NAME,
+            contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
+            contractName: MIAMIPOOL_CONTRACT_NAME,
             functionName: 'withdraw-funds',
             functionArgs: [uintCV(withdrawAmount)],
             postConditionMode: PostConditionMode.Deny,
@@ -87,10 +91,34 @@ export default function Home() {
         })
     }
 
+    async function getEstimateSTXPerBlock() {
+        let url = "https://stacks-node-api.mainnet.stacks.co/extended/v1/block?limit=1";
+        const response = await fetch(url);
+        let result = await response.json();
+        const currentBlock = result.results[0].height;
+
+        result = await callReadOnlyFunction({
+            contractAddress: MIAMICOIN_CONTRACT_ADDRESS,
+            contractName: MIAMICOIN_CONTRACT_NAME,
+            functionName: 'get-mining-stats-at-block',
+            functionArgs: [uintCV(currentBlock - 25)],
+            network: NETWORK,
+            senderAddress: GENESIS_CONTRACT_ADDRESS,
+        })
+
+        const json = JSON.stringify(result, (key, value) =>
+            typeof value === 'bigint' ? value.toString() + 'n' : value
+        )
+        console.log(json)
+
+        // return 0.1 * (parseInt(result.value.data.amount.value) / 1000000)
+        return 207.5
+    }
+
     async function startRound() {
         await doContractCall({
-            contractAddress: CONTRACT_ADDRESS,
-            contractName: CONTRACT_NAME,
+            contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
+            contractName: MIAMIPOOL_CONTRACT_NAME,
             functionName: 'start-round',
             functionArgs: [],
             postConditionMode: PostConditionMode.Allow,
@@ -100,8 +128,8 @@ export default function Home() {
 
     async function mine() {
         await doContractCall({
-            contractAddress: CONTRACT_ADDRESS,
-            contractName: CONTRACT_NAME,
+            contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
+            contractName: MIAMIPOOL_CONTRACT_NAME,
             functionName: 'start-round',
             functionArgs: [uintCV(mineRoundId).value],
             postConditionMode: PostConditionMode.Allow,
@@ -111,8 +139,8 @@ export default function Home() {
 
     async function claimMiningReward() {
         await doContractCall({
-            contractAddress: CONTRACT_ADDRESS,
-            contractName: CONTRACT_NAME,
+            contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
+            contractName: MIAMIPOOL_CONTRACT_NAME,
             functionName: 'claim-mining-reward',
             functionArgs: [uintCV(claimRoundId).value],
             postConditionMode: PostConditionMode.Allow,
@@ -122,8 +150,8 @@ export default function Home() {
 
     async function payout() {
         await doContractCall({
-            contractAddress: CONTRACT_ADDRESS,
-            contractName: CONTRACT_NAME,
+            contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
+            contractName: MIAMIPOOL_CONTRACT_NAME,
             functionName: 'claim-mining-reward',
             functionArgs: [uintCV(payoutRoundId).value],
             postConditionMode: PostConditionMode.Allow,
@@ -133,8 +161,8 @@ export default function Home() {
 
     async function getCurrentRound() {
         let result = await callReadOnlyFunction({
-            contractAddress: CONTRACT_ADDRESS,
-            contractName: CONTRACT_NAME,
+            contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
+            contractName: MIAMIPOOL_CONTRACT_NAME,
             functionName: 'get-round',
             functionArgs: [uintCV(1)],
             network: NETWORK,
@@ -164,8 +192,8 @@ export default function Home() {
 
     async function getCurrentRoundId() {
         const result = await callReadOnlyFunction({
-            contractAddress: CONTRACT_ADDRESS,
-            contractName: CONTRACT_NAME,
+            contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
+            contractName: MIAMIPOOL_CONTRACT_NAME,
             functionName: 'get-current-round-id',
             functionArgs: [],
             network: NETWORK,
@@ -187,7 +215,8 @@ export default function Home() {
                         <div />   
                         <div className={styles.backgroundGradient}> 
                             <p>Round {currentRoundId}</p>
-                            {currentRound && currentRound.totalStx / 1000000}
+                            <p>Total STX committed {currentRound && currentRound.totalStx / 1000000}</p>
+                            <p>Goal STX per block: {estimateSTXPerBlock}</p>
                         </div>
                         <input
                             onWheel={(e) => e.target.blur()}
