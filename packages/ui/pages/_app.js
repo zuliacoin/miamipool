@@ -1,27 +1,10 @@
-import '../styles/globals.css'
-import { userDataState, userSessionState, useConnect } from '../lib/auth'
-import { useAtom } from 'jotai'
-import { useEffect, useState } from 'react'
-import { Connect, getUserData } from '@syvita/connect-react'
+import { GeistProvider, CssBaseline } from '@geist-ui/react'
 
-function MyApp({ Component, pageProps }) {
-    const { authOptions } = useConnect()
-    const [userSession] = useAtom(userSessionState)
-    const [, setUserData] = useAtom(userDataState)
-
-    useEffect(() => {
-        if (userSession?.isUserSignedIn()) {
-            setUserData(userSession.loadUserData())
-        } else if (userSession.isSignInPending()) {
-            userSession.handlePendingSignIn()
-        }
-    }, [userSession, setUserData])
-
+export default function MyApp({ Component, pageProps }) {
     return (
-        <Connect authOptions={authOptions}>
+        <GeistProvider themeType="light">
+            <CssBaseline />
             <Component {...pageProps} />
-        </Connect>
+        </GeistProvider>
     )
 }
-
-export default MyApp
