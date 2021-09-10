@@ -1,0 +1,1 @@
+export const MAINNET_SERVER = 'https://stacks-node-api.mainnet.stacks.co'

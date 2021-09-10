@@ -1,11 +1,11 @@
-name = "worker"
+name = "miamipool"
 type = "javascript"
 zone_id = ""
-account_id = ""
+account_id = "c60e829b3831ea5b11b2398ef68bda23"
 route = ""
 workers_dev = true
 
 [build]
-command = "npm install && npm run build"
+command = "yarn && yarn build"
 [build.upload]
 format = "service-worker"
