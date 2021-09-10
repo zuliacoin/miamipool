@@ -147,7 +147,12 @@ export default function Home() {
         )
 
         console.log(result.participantIds.list)
-        // do for loop to grab list values
+
+        let participantIds = []
+        for (let i = 0; i < result.participantIds.list.length; i++) {
+            participantIds.push(parseInt(result.participantIds.value))
+        }
+        console.log()
         return {
             blockHeight: parseInt(result.blockHeight.value),
             blocksWon: result.blocksWon.list,
@@ -170,33 +175,30 @@ export default function Home() {
         return parseInt(result.value.value)
     }
 
-    return txId ? (
-        <Transaction txId={txId} />
-    ) : (
-        <>
-            <h1 className={styles.swap}>Swap</h1>
-            <div className={styles.buy}>
+    return (
+        <>  
+            <h1 className={styles.logo}>Swap</h1>
+            <div className={styles.joinPool}>
                 <img src="/mia.svg" height="64" width="64" alt="MIA Logo"></img>
                 <h1>Join MiamiPool</h1>
+               
                 {userSession.isUserSignedIn() && (
                     <>
-                        <h1>Current Round: {currentRoundId}</h1>
-                        {/* {currentRound && currentRound.participants} */}
-                        {currentRound && currentRound.totalStx / 1000000}
-
-                        <button className={styles.button} onClick={startRound}>
-                            Start Round
-                        </button>
+                        <div />   
+                        <div className={styles.backgroundGradient}> 
+                            <p>Round {currentRoundId}</p>
+                            {currentRound && currentRound.totalStx / 1000000}
+                        </div>
                         <input
                             onWheel={(e) => e.target.blur()}
                             type="number"
                             name="add funds"
-                            placeholder="Add amount in STX"
+                            placeholder="Amount in STX"
                             onChange={(event) =>
                                 setAddAmount(event.target.value)
                             }
                         ></input>
-                        <button className={styles.button} onClick={addFunds}>
+                        <button onClick={addFunds}>
                             Add Funds
                         </button>
 
@@ -204,32 +206,31 @@ export default function Home() {
                             onWheel={(e) => e.target.blur()}
                             type="number"
                             name="Withdraw funds"
-                            placeholder="Withdraw STX"
+                            placeholder="Amount in STX"
                             onChange={(event) =>
                                 setWithdrawAmount(event.target.value)
                             }
                         ></input>
                         <button
-                            className={styles.button}
                             onClick={withdrawFunds}
                         >
                             Withdraw Funds
                         </button>
 
-                        <button className={styles.button} onClick={mine}>
+                        {/* <button  onClick={mine}>
                             Mine
                         </button>
 
                         <button
-                            className={styles.button}
+                            
                             onClick={claimMiningReward}
                         >
                             Claim Mining Reward
                         </button>
 
-                        <button className={styles.button} onClick={payout}>
+                        <button  onClick={payout}>
                             Payout
-                        </button>
+                        </button> */}
 
                         <button
                             className={styles.signOut}
@@ -237,6 +238,7 @@ export default function Home() {
                         >
                             Sign Out
                         </button>
+                        
                     </>
                 )}
                 {!userSession.isUserSignedIn() && (
@@ -253,7 +255,7 @@ export default function Home() {
                             </p>
                         </div>
                         <button
-                            className={styles.button}
+                         
                             onClick={handleOpenAuth}
                         >
                             Connect Wallet
