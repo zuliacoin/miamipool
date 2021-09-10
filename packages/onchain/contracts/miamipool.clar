@@ -583,6 +583,14 @@
     (ok (is-round-expired id))
 )
 
+(define-read-only (get-next-block-to-check (id uint))
+    (ok (get nextBlockToCheck (map-get? RoundsStatus { id: id })))
+)
+
+(define-read-only (get-last-block-to-check (id uint))
+    (ok (get lastBlockToCheck (map-get? RoundsStatus { id: id })))
+)
+
 ;;   ||||     D E C E N T R A L I S E D .    G L O B A L .    S O V E R E I G N .      ||||
 
 ;;                    ||||     S Y V I T A    G U I L D     ||||
