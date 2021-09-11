@@ -1,4 +1,4 @@
-import { API_SERVER } from "../constants";
+import { API_SERVER } from "../common";
 
 export async function handleCron(event: ScheduledEvent): Promise<Response> {
     const currentBlock = await getCurrentBlock()
