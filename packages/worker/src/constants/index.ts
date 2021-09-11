@@ -1,27 +1,13 @@
-export const mode = 'testnet' // switch between mainnet and testnet
+import { StacksTestnet, StacksMainnet } from 'micro-stacks/network'
 
 // ========================================================================== //
 
-export const MIAMIPOOL_ADDY = function () {
-    if (mode === 'testnet') {
-        return 'ST343J7DNE122AVCSC4HEK4MF871PW470ZV04CFXH'
-    } else {
-        return ''
-    }
-}
+export const MIAMIPOOL_ADDY = 'ST343J7DNE122AVCSC4HEK4MF871PW470ZV04CFXH'
 
-export const API_SERVER = function () {
-    if (mode === 'testnet') {
-        return 'https://stacks-node-api.testnet.stacks.co'
-    } else {
-        return 'https://stacks-node-api.mainnet.stacks.co'
-    }
-}
+export const API_SERVER = 'https://stacks-node-api.testnet.stacks.co'
+// export const API_SERVER = 'https://stacks-node-api.mainnet.stacks.co'
 
-export const MIAMIPOOL_NAME = function () {
-    if (mode === 'testnet') {
-        return 'advanced-olive-mackerel'
-    } else {
-        return ''
-    }
-}
+export const MIAMIPOOL_NAME = 'advanced-olive-mackerel'
+
+export const NETWORK = new StacksTestnet()
+// export const NETWORK = new StacksMainnet()

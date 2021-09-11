@@ -1,8 +1,7 @@
 import { handleCron } from './lib/cron'
-import { mineTokens } from './lib/mineTokens'
 
 addEventListener('fetch', (event) => {
-  event.respondWith(mineTokens())
+  event.respondWith(new Response("hello"))
 })
 
 addEventListener('scheduled', (event) => {
