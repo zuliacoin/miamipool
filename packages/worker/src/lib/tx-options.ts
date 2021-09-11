@@ -7,7 +7,7 @@ export function getDefaultTxOptions(args: any, functionName: string) {
     contractName: MIAMIPOOL_NAME,
     functionName: functionName,
     functionArgs: args,
-    // @ts-ignore
+    // @ts-ignore - PRIVATE_KEY is set as a encrypted secret
     senderKey: PRIVATE_KEY,
     validateWithAbi: true,
     NETWORK,

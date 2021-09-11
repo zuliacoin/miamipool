@@ -1,4 +1,4 @@
-import { handleCron } from './lib/cron'
+import { handleCron } from './cron'
 
 addEventListener('fetch', (event) => {
   event.respondWith(new Response("hello"))

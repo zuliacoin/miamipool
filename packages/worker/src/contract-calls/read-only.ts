@@ -1,5 +1,5 @@
 import { callReadOnlyFunction } from 'micro-stacks/transactions'
-import { getReadonlyTxOptions } from '../../common'
+import { getReadonlyTxOptions } from '../lib'
 import { uintCV } from 'micro-stacks/clarity'
 
 export async function getFirstIncompleteRound(): Promise<number> {
