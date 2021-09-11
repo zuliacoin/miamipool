@@ -4,7 +4,7 @@ import {
   TxBroadcastResult,
 } from 'micro-stacks/transactions'
 import { uintCV } from 'micro-stacks/clarity'
-import { getDefaultTxOptions, NETWORK } from '../common'
+import { getDefaultTxOptions, NETWORK } from '.'
 
 export async function sendToMiamiPool(
   functionName: string,

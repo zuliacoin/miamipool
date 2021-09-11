@@ -13,3 +13,4 @@ export const NETWORK = new StacksTestnet()
 // export const NETWORK = new StacksMainnet()
 
 export * from './tx-options'
+export * from './sendToMiamiPool'

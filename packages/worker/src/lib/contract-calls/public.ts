@@ -1,5 +1,5 @@
 import { TxBroadcastResult } from 'micro-stacks/transactions'
-import { sendToMiamiPool } from './sendToMiamiPool'
+import { sendToMiamiPool } from '../../common'
 import { getFirstIncompleteRound } from './read-only'
 
 export async function mine(roundId: number): Promise<TxBroadcastResult> {
