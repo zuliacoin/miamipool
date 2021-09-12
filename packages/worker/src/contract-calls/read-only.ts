@@ -2,7 +2,9 @@ import { callReadOnlyFunction } from 'micro-stacks/transactions'
 import { getReadonlyTxOptions } from '../lib'
 import { ClarityType, uintCV } from 'micro-stacks/clarity'
 
-export async function getRoundStatus(roundId: number): Promise<{hasMined, hasClaimed, hasPaidOut}> {
+export async function getRoundStatus(
+  roundId: number
+): Promise<{ hasMined: boolean; hasClaimed: boolean; hasPaidOut: boolean }> {
   const options = getReadonlyTxOptions([uintCV(roundId)], 'get-round-status')
   const result = await callReadOnlyFunction(options)
   // @ts-ignore
