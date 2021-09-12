@@ -6,8 +6,7 @@
   "scripts": {
     "build": "webpack",
     "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
-    "test": "jest --config jestconfig.json --verbose",
-    "dev": "miniflare ./dist/worker.js --watch --debug"
+    "dev": "miniflare --watch --debug"
   },
   "author": "author",
   "license": "MIT OR Apache-2.0",
@@ -25,6 +24,7 @@
     "@typescript-eslint/eslint-plugin": "^4.16.1",
     "@typescript-eslint/parser": "^4.16.1",
     "jest": "^27.0.1",
+    "miniflare": "^1.4.1",
     "prettier": "^2.3.0",
     "service-worker-mock": "^2.0.5",
     "ts-jest": "^27.0.1",
