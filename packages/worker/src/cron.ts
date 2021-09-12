@@ -4,10 +4,24 @@ import {
   payout,
   getNextIncompleteRound,
   getRoundStatus,
+  getCurrentRoundId,
+  getCurrentBlock,
 } from './contract-calls'
-import { canClaimBlock } from './lib'
+import { canClaimBlock, isRoundExpired } from './lib'
 
 export async function handleCron(event: ScheduledEvent): Promise<Response> {
+  const currentRound = await getCurrentRoundId()
+  const currentBlock = await getCurrentBlock()
+
+  if (await isRoundExpired(currentRound, currentBlock)) {
+    console.log(`Current block: #${currentBlock}`)
+    console.log(`Current round (${currentRound}) has expired.`)
+    console.log('Attempting mine...')
+    const result = await mine(currentRound)
+    console.log('Sent mining TX')
+    return new Response(JSON.stringify(result))
+  }
+
   const round = await getNextIncompleteRound()
 
   if (round == -1) {

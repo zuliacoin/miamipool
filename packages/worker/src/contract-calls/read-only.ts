@@ -1,6 +1,6 @@
-import { callReadOnlyFunction } from 'micro-stacks/transactions'
+import { callReadOnlyFunction } from '@syvita/micro-stacks/transactions'
 import { API_SERVER, getReadonlyTxOptions } from '../lib'
-import { ClarityType, uintCV } from 'micro-stacks/clarity'
+import { ClarityType, uintCV } from '@syvita/micro-stacks/clarity'
 
 export async function getRoundStatus(roundId: number): Promise<{
   hasMined: boolean
@@ -33,6 +33,30 @@ export async function getNextIncompleteRound(): Promise<number> {
   } else {
     return parseInt(data.list[0].value)
   }
+}
+
+export async function getCurrentRoundId(): Promise<number> {
+  const options = getReadonlyTxOptions([], 'get-current-round-id')
+  const result = await callReadOnlyFunction(options)
+
+  // @ts-ignore
+  const data = result.value
+
+  if (data.value == undefined) {
+    return -1
+  } else {
+    return parseInt(data.value)
+  }
+}
+
+export async function getRoundStart(roundId: number): Promise<number> {
+  const options = getReadonlyTxOptions([uintCV(roundId)], 'get-round')
+  const result = await callReadOnlyFunction(options)
+
+  // @ts-ignore
+  const data = result.value.data
+
+  return parseInt(data.blockHeight.value)
 }
 
 export async function getCurrentBlock(): Promise<number> {

@@ -1,4 +1,7 @@
-import { AnchorMode, PostConditionMode } from 'micro-stacks/transactions'
+import {
+  AnchorMode,
+  PostConditionMode,
+} from '@syvita/micro-stacks/transactions'
 import { MIAMIPOOL_ADDY, MIAMIPOOL_NAME, NETWORK } from '.'
 
 export function getDefaultTxOptions(args: any, functionName: string) {
