@@ -5,7 +5,7 @@
   "main": "dist/worker.js",
   "scripts": {
     "build": "webpack",
-    "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
+    "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}'",
     "dev": "miniflare --watch --debug"
   },
   "author": "author",

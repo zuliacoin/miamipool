@@ -6,7 +6,7 @@ route = ""
 workers_dev = true
 
 [build]
-command = "yarn && yarn build"
+command = "yarn && yarn format && yarn build"
 [build.upload]
 format = "service-worker"
 main = "worker.js"
