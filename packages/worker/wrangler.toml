@@ -9,3 +9,7 @@ workers_dev = true
 command = "yarn && yarn build"
 [build.upload]
 format = "service-worker"
+main = "worker.js"
+
+[triggers]
+crons = ["* * * * *"]
