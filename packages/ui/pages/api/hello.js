@@ -1,17 +1,5 @@
-const acceptedMethods = ['POST']
+// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-export default async (event) => {
-    const req = event.request
-    const colo = req.cf.colo
-
-    if (acceptedMethods.indexOf(req.method) >= 0) {
-        return new Response(
-            JSON.stringify({
-                message: 'Hello there',
-                colo: colo,
-            })
-        )
-    } else {
-        return new Response(`Cannot ${req.method} /api/hello. Please use POST.`)
-    }
+export default function handler(req, res) {
+    res.status(200).json({ name: 'John Doe' })
 }
