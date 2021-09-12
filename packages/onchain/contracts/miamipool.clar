@@ -128,7 +128,6 @@
   )
 )
 
-
 ;; FILTERS
 
 (define-private (is-not-first-element (roundId uint))
@@ -189,6 +188,7 @@
         )
     )
 )
+
 (define-private (is-round-expired (id uint))
     (let
         (
@@ -203,7 +203,7 @@
     )
 )
 
-;; done
+;;      ////    PUBLIC    \\\\       ;;
 (define-public (start-round)
     (let 
         (
@@ -467,7 +467,6 @@
     )
 )
 
-;; Will need to be called multiple times (can payout max 32 participants at a time)
 (define-public (payout-mia (roundId uint))
     (begin
         (let
@@ -478,16 +477,16 @@
                 (participantIds (get participantIds rounds))
                 (requiredPayout (get requiredPayouts roundsStatus))
             )
+
             (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
-            (asserts! (not (>= requiredPayout (/ (len participantIds) u32))) (err ERR_ALL_PARTICIPANTS_PAID))
-
-            (var-set roundIdToCheck roundId)
-
-            (if (is-eq requiredPayout u0)
-                (try! (payout-fee))
+            (if (is-eq (/ (len participantIds) u32) u0)
                 false
+                (asserts! (not (>= requiredPayout (/ (len participantIds) u32))) (err ERR_ALL_PARTICIPANTS_PAID))
             )
 
+            (if (is-eq requiredPayout u0) (try! (payout-fee)) false)
+
+            (var-set roundIdToCheck roundId)
             (var-set sendManyList (list))
             (var-set firstIdToInclude (unwrap-panic (element-at participantIds (* requiredPayout u32))))
 
@@ -497,21 +496,23 @@
             )
 
             (filter is-in-next-200-ids participantIds)
-
             (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many (map calculate-return (var-get sendManyList)))))
-
+            
             (asserts! (map-set RoundsStatus {id: roundId}
                 {
                     hasMined: (get hasMined roundsStatus),
                     hasClaimed: (get hasClaimed roundsStatus),
                     hasPaidOut: 
-                        (if (is-eq requiredPayout (- (/ (len participantIds) u32) u1))
-                            (begin
-                                    (var-set idToRemove roundId)
-                                    (filter is-not-id (var-get incompleteRounds))
-                                    true
-                            ) 
-                            false
+                         (if (is-eq (/ (len participantIds) u32) u0)
+                            true
+                            (if (is-eq requiredPayout (- (/ (len participantIds) u32) u1))
+                                (begin
+                                        (var-set idToRemove roundId)
+                                        (filter is-not-id (var-get incompleteRounds))
+                                        true
+                                ) 
+                                false
+                            )
                         ),
                     nextBlockToCheck: (get nextBlockToCheck roundsStatus),
                     lastBlockToCheck: (get lastBlockToCheck roundsStatus),
