@@ -1,14 +1,34 @@
-import { API_SERVER } from "./lib";
+import {
+  mine,
+  claim,
+  payout,
+  getNextIncompleteRound,
+  getRoundStatus,
+} from './contract-calls'
 
 export async function handleCron(event: ScheduledEvent): Promise<Response> {
-    const currentBlock = await getCurrentBlock()
+  const round = await getNextIncompleteRound()
+  const roundStatus = await getRoundStatus(round)
 
-    return new Response()
-}
+  const hasMined = roundStatus.hasMined
+  const hasClaimed = roundStatus.hasClaimed
+  const hasPaidOut = roundStatus.hasPaidOut
 
-async function getCurrentBlock(): Promise<Number> {
-    let url = `${API_SERVER}/extended/v1/block?limit=1`;
-    const response = await fetch(url);
-    let result = await response.json();
-    return result.results[0].height;
+  if (!hasMined) {
+    const result = await mine(round)
+    return new Response(JSON.stringify(result))
+  } else {
+    if (!hasClaimed) {
+      const result = await claim(round)
+      return new Response(JSON.stringify(result))
+    } else {
+      if (!hasPaidOut) {
+        const result = await payout(round)
+        return new Response(JSON.stringify(result))
+      } else {
+        // do nothing
+        return new Response()
+      }
+    }
+  }
 }
