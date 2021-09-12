@@ -9,8 +9,12 @@ export const API_SERVER = 'https://stacks-node-api.testnet.stacks.co'
 
 export const MIAMIPOOL_NAME = 'large-peach-mink'
 
+export const MATURITY_LEN = 10
+// export const MATURITY_LEN = 100
+
 export const NETWORK = new StacksTestnet()
 // export const NETWORK = new StacksMainnet()
 
 export * from './tx-options'
 export * from './sendToMiamiPool'
+export * from './can-claim-block'
