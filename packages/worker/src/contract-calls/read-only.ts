@@ -24,8 +24,15 @@ export async function getRoundStatus(roundId: number): Promise<{
 export async function getNextIncompleteRound(): Promise<number> {
   const options = getReadonlyTxOptions([], 'get-incomplete-rounds')
   const result = await callReadOnlyFunction(options)
+
   // @ts-ignore
-  return parseInt(result.value.list[0].value)
+  const data = result.value
+
+  if (data.list[0] == undefined) {
+    return -1
+  } else {
+    return parseInt(data.list[0].value)
+  }
 }
 
 export async function getCurrentBlock(): Promise<number> {

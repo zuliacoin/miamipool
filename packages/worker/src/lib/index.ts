@@ -7,7 +7,7 @@ export const MIAMIPOOL_ADDY = 'ST343J7DNE122AVCSC4HEK4MF871PW470ZV04CFXH'
 export const API_SERVER = 'https://stacks-node-api.testnet.stacks.co'
 // export const API_SERVER = 'https://stacks-node-api.mainnet.stacks.co'
 
-export const MIAMIPOOL_NAME = 'large-peach-mink'
+export const MIAMIPOOL_NAME = 'ministerial-lavender-lion'
 
 export const MATURITY_LEN = 10
 // export const MATURITY_LEN = 100

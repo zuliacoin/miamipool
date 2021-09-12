@@ -9,6 +9,12 @@ import { canClaimBlock } from './lib'
 
 export async function handleCron(event: ScheduledEvent): Promise<Response> {
   const round = await getNextIncompleteRound()
+
+  if (round == -1) {
+    console.log('No incomplete rounds to operate on.')
+    return new Response()
+  }
+
   console.log(`Using round ${round}`)
   const roundStatus = await getRoundStatus(round)
   console.log(`Round status: ${JSON.stringify(roundStatus)}`)
