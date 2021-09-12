@@ -483,10 +483,9 @@
                 false
                 (asserts! (not (>= requiredPayout (/ (len participantIds) u32))) (err ERR_ALL_PARTICIPANTS_PAID))
             )
-
+            (var-set roundIdToCheck roundId)
             (if (is-eq requiredPayout u0) (try! (payout-fee)) false)
 
-            (var-set roundIdToCheck roundId)
             (var-set sendManyList (list))
             (var-set firstIdToInclude (unwrap-panic (element-at participantIds (* requiredPayout u32))))
 
