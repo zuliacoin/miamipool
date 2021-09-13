@@ -19,7 +19,6 @@ export const useConnect = () => {
         setAuthResponse(payload.authResponse)
         const userData = await payload.userSession.loadUserData()
         setUserData(userData)
-        Router.reload(window.location.pathname)
     }
 
     const authOptions = {
