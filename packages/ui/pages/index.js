@@ -15,9 +15,6 @@ export default function Home({ currentRoundId }) {
     const { handleSignOut } = useConnect()
     const [userSession] = useAtom(userSessionState)
 
-    if (userSession.isUserSignedIn()) {
-        {Router.push('/' + currentRoundId)}
-    }
 
     return (
         <>  
@@ -42,6 +39,12 @@ export default function Home({ currentRoundId }) {
                     >
                         Connect Wallet
                     </button>
+                    <button
+                        
+                        onClick={() => { {Router.push('/' + currentRoundId)}}}
+                    >
+                        View Rounds
+                    </button> 
                 </>
             )}
             </div>

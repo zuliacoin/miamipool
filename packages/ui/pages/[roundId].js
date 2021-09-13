@@ -20,13 +20,17 @@ export default function Round({ round }) {
     const roundHistory = []
     for (let i = 0; i < round.latestRoundId; i++) {
         roundHistory.push(
-            <Link href={'/' + (round.latestRoundId - i)}>
+            <Link key={ round.latestRoundId } href={'/' + (round.latestRoundId - i)}>
                 <a>
                     <li>{'Round ' + (round.latestRoundId - i)}</li>
                 </a>
             </Link>
         )
     }
+
+    // Serialization
+
+    console.log(round.blocksWon)
 
 
     return (
@@ -74,27 +78,6 @@ export default function Round({ round }) {
                             Sign Out
                         </button>
                         
-                    </>
-                )}
-                {!userSession.isUserSignedIn() && (
-                    <>
-                        <div>
-                            <p className={styles.snippet}>
-                                Welcome to MiamiPool a completely trustless and
-                                decentralized mining pool for earning $MIA!
-                                Connect your wallet to contribute STX and mine
-                                for $MiamiCoin with a collection of others, to
-                                increase your chances of winning. For more
-                                information you can view the MiamiPool
-                                <a href="I FORGOR"> docs</a>.
-                            </p>
-                        </div>
-                        <button
-                         
-                            onClick={handleOpenAuth}
-                        >
-                            Connect Wallet
-                        </button>
                     </>
                 )}
             </div>
@@ -167,7 +150,11 @@ export const getStaticProps = async (context) => {
         senderAddress: GENESIS_CONTRACT_ADDRESS,
     })
     roundStatus = await roundStatus.value.data;
+
     
+    const json = JSON.stringify(round.blocksWon, (key, value) =>
+    typeof value === "bigint" ? value.toString() + "n" : value
+    );
     let isRoundExpired = currentBlockHeight >= (round.startBlock + ROUND_LEN) ? true : false;
     let data = {
         roundId: roundId,
@@ -175,7 +162,7 @@ export const getStaticProps = async (context) => {
         currentBlockHeight: currentBlockHeight,
         isRoundExpired: isRoundExpired,
         blockHeight: parseInt(round.blockHeight.value),
-        // blocksWon: round.blocksWon.list,
+        blocksWon: json,
         participants: participantIds,
         totalMiaWon: parseInt(round.totalMiaWon.value),
         totalStx: parseInt(round.totalStx.value) / 1000000,
