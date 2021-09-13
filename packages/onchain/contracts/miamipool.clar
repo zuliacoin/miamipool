@@ -30,6 +30,7 @@
 (define-constant ERR_ALL_PARTICIPANTS_PAID u209)
 (define-constant ERR_MINING_NOT_STARTED u210)
 (define-constant ERR_ALREADY_MINED u211)
+(define-constant ERR_MUST_CHECK_ALL_MINED_BLOCKS u212)
 
 (define-data-var participantIdTip uint u0)
 
@@ -183,7 +184,7 @@
             (payoutFeeList (map calculate-fee (var-get feePrincipals)))
         )
         (begin
-            (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many (unwrap-panic (as-max-len? payoutFeeList u100)))))   
+            (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many (unwrap-panic (as-max-len? payoutFeeList u3)))))   
             (ok true)
         )
     )
@@ -194,7 +195,7 @@
         (
             (round (unwrap-panic (map-get? Rounds { id: id })))
             (blockHeight (get blockHeight round))
-            (endBlockHeight (+ blockHeight u150))
+            (endBlockHeight (+ blockHeight u5))
         )
         (if (> block-height endBlockHeight)
             true
@@ -377,19 +378,10 @@
                     (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                     (totalStx (get totalStx rounds))
                     (participantIds (get participantIds rounds))
-                    (uwu (/ totalStx u150))
+                    (uwu (/ totalStx u5))
                     (miningBlocksList 
                         (list 
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu
                         )
                     )
                 )
@@ -400,7 +392,7 @@
                         hasClaimed: false,
                         hasPaidOut: false,
                         nextBlockToCheck: block-height,
-                        lastBlockToCheck: (- (+ block-height u150) u1),
+                        lastBlockToCheck: (- (+ block-height u5) u1),
                         requiredPayouts: u0
                     }
                 ) (err u0))
@@ -423,7 +415,7 @@
         )
         (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
         (asserts! (> block-height (+ nextBlockToCheck u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
-        (asserts! (not (> nextBlockToCheck lastBlockToCheck)) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
+        (asserts! (not (get hasClaimed roundsStatus)) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
 
         (if isWinner
             (begin 
@@ -432,7 +424,7 @@
                     {
                         totalStx: (get totalStx rounds),
                         participantIds: (get participantIds rounds),
-                        blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) nextBlockToCheck) u150)),
+                        blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) nextBlockToCheck) u5)),
                         totalMiaWon: (+ (get totalMiaWon rounds) (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 get-coinbase-amount nextBlockToCheck))),
                         blockHeight: (get blockHeight rounds)
                     }
@@ -479,10 +471,10 @@
             )
 
             (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
-            (if (is-eq (/ (len participantIds) u32) u0)
-                false
-                (asserts! (not (>= requiredPayout (/ (len participantIds) u32))) (err ERR_ALL_PARTICIPANTS_PAID))
-            )
+            (asserts! (get hasClaimed roundsStatus) (err ERR_MUST_CHECK_ALL_MINED_BLOCKS))
+            (asserts! (not (get hasPaidOut roundsStatus)) (err ERR_ALL_PARTICIPANTS_PAID))
+            
+
             (var-set roundIdToCheck roundId)
             (if (is-eq requiredPayout u0) (try! (payout-fee)) false)
 
@@ -503,14 +495,18 @@
                     hasClaimed: (get hasClaimed roundsStatus),
                     hasPaidOut: 
                          (if (is-eq (/ (len participantIds) u32) u0)
-                            true
+                            (begin
+                                (var-set idToRemove roundId)
+                                (filter is-not-id (var-get incompleteRounds))
+                                true
+                            )
                             (if (is-eq requiredPayout (- (/ (len participantIds) u32) u1))
                                 (begin
                                         (var-set idToRemove roundId)
                                         (filter is-not-id (var-get incompleteRounds))
                                         true
                                 ) 
-                                false
+                                true
                             )
                         ),
                     nextBlockToCheck: (get nextBlockToCheck roundsStatus),
