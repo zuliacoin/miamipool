@@ -41,7 +41,7 @@ export default function Home({ currentRoundId }) {
                     </button>
                     <button
                         
-                        onClick={() => { {Router.push('/' + currentRoundId)}}}
+                        // onClick={() => { {Router.push('/' + currentRoundId)}}}
                     >
                         View Rounds
                     </button> 

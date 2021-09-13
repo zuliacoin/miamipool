@@ -98,7 +98,7 @@ export const getStaticPaths = async () => {
     currentRoundId = await parseInt(currentRoundId.value.value)
 
     const paths = []
-    for (let i = 1; i <= currentRoundId; i++) {
+    for (let i = 0; i <= currentRoundId; i++) {
         paths.push({ params: { roundId: i.toString()}})
     }
 
