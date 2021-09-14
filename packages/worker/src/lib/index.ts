@@ -2,12 +2,12 @@ import { StacksTestnet, StacksMainnet } from '@syvita/micro-stacks/network'
 
 // ========================================================================== //
 
-export const MIAMIPOOL_ADDY = 'ST2J2ASASFAS80NGCVP2CVKDCSPR2GF2DQG9V5E3H'
+export const MIAMIPOOL_ADDY = 'ST343J7DNE122AVCSC4HEK4MF871PW470ZV04CFXH'
 
 export const API_SERVER = 'https://stacks-node-api.testnet.stacks.co'
 // export const API_SERVER = 'https://stacks-node-api.mainnet.stacks.co'
 
-export const MIAMIPOOL_NAME = 'intellectual-red-puma'
+export const MIAMIPOOL_NAME = 'purring-tan-tarantula'
 
 export const MATURITY_LEN = 10
 // export const MATURITY_LEN = 100
