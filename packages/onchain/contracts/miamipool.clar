@@ -497,13 +497,13 @@
                          (if (is-eq (/ (len participantIds) u32) u0)
                             (begin
                                 (var-set idToRemove roundId)
-                                (filter is-not-id (var-get incompleteRounds))
+                                (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
                                 true
                             )
                             (if (is-eq requiredPayout (- (/ (len participantIds) u32) u1))
                                 (begin
                                         (var-set idToRemove roundId)
-                                        (filter is-not-id (var-get incompleteRounds))
+                                        (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
                                         true
                                 ) 
                                 true
@@ -577,6 +577,8 @@
 (define-read-only (get-incomplete-rounds)
     (ok (var-get incompleteRounds))
 )
+
+(start-round)
 
 ;;   ||||     D E C E N T R A L I S E D .    G L O B A L .    S O V E R E I G N .      ||||
 
