@@ -1,0 +1,40 @@
+.navbar {
+    display: flex;
+    
+}
+
+.logo {
+    font-weight: normal;
+    margin-left: 35px;
+    margin-top: 10px;
+    font-size: xx-large;
+    color: #ffffff;
+}
+
+
+
+.links {
+    list-style: none;
+    display: flex;
+    flex-direction: row;
+    margin-top: 20px;
+    font-size: large;
+    margin-left: auto;
+    color: #ffffff;
+
+}
+
+.links li{
+    margin-right: 15px;
+}
+
+@media(max-width: 650px) {
+
+
+
+.links {
+    display: none;
+}   
+
+
+}

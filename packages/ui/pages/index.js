@@ -2,6 +2,7 @@ import styles from '../styles/Home.module.css'
 import { useConnect, userSessionState } from '../lib/auth'
 import { useAtom } from 'jotai'
 import Router from 'next/router'
+import Navbar from '../components/Navbar'
 import {
     NETWORK, GENESIS_CONTRACT_ADDRESS, MIAMICOIN_CONTRACT_ADDRESS,
     MIAMICOIN_CONTRACT_NAME, MIAMIPOOL_CONTRACT_ADDRESS, MIAMIPOOL_CONTRACT_NAME, API_SERVER, ROUND_LEN
@@ -18,14 +19,15 @@ export default function Home({ currentRoundId }) {
 
     return (
         <>  
-            <h1 className={styles.logo}>MiamiPool</h1>
+        <Navbar/>
             <div className={styles.joinPool}>               
             {!userSession.isUserSignedIn() && (
                 <>
-                    <div>
-                        <p className={styles.snippet}>
+                    <div className={styles.snippet}>
+                        <p >
                             Welcome to MiamiPool a completely trustless and
-                            decentralized mining pool for earning $MIA!
+                            decentralized mining pool for earning $MIA!</p>
+                            <p>
                             Connect your wallet to contribute STX and mine
                             for $MiamiCoin with a collection of others, to
                             increase your chances of winning. For more

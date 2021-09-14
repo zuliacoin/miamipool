@@ -1,0 +1,29 @@
+   .links ul {
+        list-style: none;
+            position: absolute;
+    right: 40px;
+    top: 50px;
+    font-size: large;
+    color: #ffffff;
+   }
+
+   .links ul li {
+       margin-top: 5px;
+   }
+
+.mobilebutton {
+ width: 25px;
+ height: 25px;
+
+}
+
+@media(min-width: 650px) {
+
+
+
+.links ul {
+    display: none;
+}
+
+
+}
