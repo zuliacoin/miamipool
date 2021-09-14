@@ -2,6 +2,7 @@ import styles from '../styles/Home.module.css'
 import { useConnect, userSessionState } from '../lib/auth'
 import { useAtom } from 'jotai'
 import Router from 'next/router'
+import Navbar from '../components/Navbar'
 import {
     NETWORK, GENESIS_CONTRACT_ADDRESS, MIAMICOIN_CONTRACT_ADDRESS,
     MIAMICOIN_CONTRACT_NAME, MIAMIPOOL_CONTRACT_ADDRESS, MIAMIPOOL_CONTRACT_NAME, API_SERVER, ROUND_LEN
@@ -18,6 +19,7 @@ export default function Home({ currentRoundId }) {
 
     return (
         <>  
+        <Navbar/>
             <h1 className={styles.logo}>MiamiPool</h1>
             <div className={styles.joinPool}>               
             {!userSession.isUserSignedIn() && (
