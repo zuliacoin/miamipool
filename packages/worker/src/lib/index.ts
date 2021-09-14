@@ -9,7 +9,7 @@ export const API_SERVER = 'https://stacks-node-api.testnet.stacks.co'
 
 export const MIAMIPOOL_NAME = 'purring-tan-tarantula'
 
-export const MATURITY_LEN = 10
+export const MATURITY_LEN = 11
 // export const MATURITY_LEN = 100
 
 export const ROUND_LEN = 5
