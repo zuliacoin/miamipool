@@ -15,3 +15,17 @@
     font-weight: normal;
 }
 
+.snippet {
+    margin: auto;
+    font-size: x-large;
+    margin-top: 200px;
+    color: #ffffff;
+    width: 600px;
+}
+
+@media (max-width: 650px) {
+    .snippet {
+        font-size: x-large;
+        width: 350px
+    }
+}

@@ -20,14 +20,14 @@ export default function Home({ currentRoundId }) {
     return (
         <>  
         <Navbar/>
-            <h1 className={styles.logo}>MiamiPool</h1>
             <div className={styles.joinPool}>               
             {!userSession.isUserSignedIn() && (
                 <>
-                    <div>
-                        <p className={styles.snippet}>
+                    <div className={styles.snippet}>
+                        <p >
                             Welcome to MiamiPool a completely trustless and
-                            decentralized mining pool for earning $MIA!
+                            decentralized mining pool for earning $MIA!</p>
+                            <p>
                             Connect your wallet to contribute STX and mine
                             for $MiamiCoin with a collection of others, to
                             increase your chances of winning. For more
