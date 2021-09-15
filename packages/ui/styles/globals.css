@@ -21,7 +21,7 @@ button {
     padding: 14px 26px;
     letter-spacing: 0.1em;
     color: white;
-    background: #FC6675;
+    background: rgba(190, 0, 120, 0.5);
     padding: 14px 24px;
     border: none;
     border-radius: 10px;
@@ -32,12 +32,13 @@ button {
 }
 
 button:hover {
-    background-color: rgba(145, 70, 255, 0.9);
+    background-color: rgba(190, 0, 120, .4);
+    color: white;
     transition: 200ms;
 }
 
 button:active {
-    background-color: rgba(145, 70, 255, 0.8);
+    background-color: rgba(190, 0, 120, .3);
     transition: 200ms;
 }
 

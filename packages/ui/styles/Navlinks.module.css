@@ -1,14 +1,17 @@
    .links ul {
-        list-style: none;
-            position: absolute;
-    right: 40px;
-    top: 50px;
-    font-size: large;
-    color: #ffffff;
+    list-style: none;
+    position: relative;
+    text-align: center;
+    top: 40px;
+    font-size: x-large;
+    color: #ffffff; 
+
+
    }
 
    .links ul li {
        margin-top: 5px;
+
    }
 
 .mobilebutton {

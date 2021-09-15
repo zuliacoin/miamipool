@@ -9,8 +9,28 @@
     margin-top: 10px;
     font-size: xx-large;
     color: #ffffff;
+    cursor: pointer;
 }
 
+.signOutButton {
+    font-family: Inter;
+    font-weight: 600;
+    margin-top: -10px;
+    text-transform: uppercase;
+    padding: 14px 26px;
+    letter-spacing: 0.1em;
+    color: white;
+    background: rgba(190, 0, 120, 0.5);
+    padding: 14px 24px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    -webkit-transition: 200ms;
+    -moz-transition: 200ms;
+    transition: 200ms;
+    width: 200px;
+    height: 48px;
+}
 
 
 .links {
