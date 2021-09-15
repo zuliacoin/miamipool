@@ -38,8 +38,8 @@
 (define-data-var idToRemove uint u0)
 (define-data-var roundIdToCheck uint u0)
 (define-data-var firstElement uint u0)
-(define-data-var firstIdToInclude uint u0)
-(define-data-var lastIdToInclude uint u0)
+(define-data-var totalCount uint u0)
+(define-data-var payoutNum uint u0)
 (define-data-var sendManyList (list 200 uint) (list))
 
 
@@ -139,11 +139,26 @@
   (not (is-eq id (var-get idToRemove)))
 )
 
-(define-private (is-in-next-200-ids (participantId uint))
-    (if (and (>= participantId (var-get firstIdToInclude)) (<= participantId (var-get lastIdToInclude)))
-        (var-set sendManyList (unwrap-panic (as-max-len? (append (var-get sendManyList) participantId) u32)))
-        false
+(define-private (next-32-values (participantId uint)) 
+  (let
+    (
+        (count (var-get totalCount))
+        (requiredPayout (var-get payoutNum))
     )
+
+    (if (is-eq requiredPayout u0)
+        (if (and (>= count u0) (< count u32))
+            (var-set sendManyList (unwrap-panic (as-max-len? (append (var-get sendManyList) participantId) u32)))
+            false
+        )
+        (if (and (>= count (* requiredPayout u32)) (< count (* (+ requiredPayout u1) u32)))
+            (var-set sendManyList (unwrap-panic (as-max-len? (append (var-get sendManyList) participantId) u32)))
+            false
+        )
+    )
+
+    (var-set totalCount (+ count u1))
+  )
 )
 
 (define-private (calculate-return (participantId uint))
@@ -414,7 +429,7 @@
             
         )
         (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
-        (asserts! (> block-height (+ nextBlockToCheck u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
+        (asserts! (> block-height (+ nextBlockToCheck u10)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
         (asserts! (not (get hasClaimed roundsStatus)) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
 
         (if isWinner
@@ -477,16 +492,12 @@
 
             (var-set roundIdToCheck roundId)
             (if (is-eq requiredPayout u0) (try! (payout-fee)) false)
-
+            
             (var-set sendManyList (list))
-            (var-set firstIdToInclude (unwrap-panic (element-at participantIds (* requiredPayout u32))))
+            (var-set payoutNum requiredPayout)
+            (var-set totalCount u0)
+            (filter next-32-values participantIds)
 
-            (if (is-eq requiredPayout (/ (len participantIds) u32))
-                (var-set lastIdToInclude (unwrap-panic (element-at participantIds (+ (* requiredPayout u32) (- (len participantIds) (var-get firstIdToInclude))))))
-                (var-set lastIdToInclude (unwrap-panic (element-at participantIds (+ (* requiredPayout u32) u31))))
-            )
-
-            (filter is-in-next-200-ids participantIds)
             (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many (map calculate-return (var-get sendManyList)))))
             
             (asserts! (map-set RoundsStatus {id: roundId}
@@ -506,7 +517,7 @@
                                         (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
                                         true
                                 ) 
-                                true
+                                false
                             )
                         ),
                     nextBlockToCheck: (get nextBlockToCheck roundsStatus),
@@ -515,7 +526,7 @@
                 }
             ) (err u0))
 
-            (ok true)
+            (ok (var-get sendManyList))
         )
     )
 )
@@ -556,7 +567,7 @@
                 blocksWon: (get blocksWon rounds),
                 totalMiaWon: (get totalMiaWon rounds),
                 blockHeight: (get blockHeight rounds),
-                participantAddresses: (map id-to-principal (get participantIds rounds))    
+                participantAddresses: (map id-to-principal (get participantIds rounds))
             }
         )
     )
