@@ -2,10 +2,10 @@ import {
   mine,
   claim,
   payout,
-  getNextIncompleteRound,
   getRoundStatus,
   getCurrentRoundId,
   getCurrentBlock,
+  getIncompleteRounds,
 } from './contract-calls'
 import { canClaimBlock, isRoundExpired } from './lib'
 
@@ -19,49 +19,53 @@ export async function handleCron(event: ScheduledEvent): Promise<Response> {
     console.log('Attempting mine...')
     const result = await mine(currentRound)
     console.log('Sent mining TX')
-    return new Response(JSON.stringify(result))
+    console.log(`TXID: 0x${result}`)
+    return new Response()
   }
 
-  const round = await getNextIncompleteRound()
+  const rounds = await getIncompleteRounds()
 
-  if (round == -1) {
+  if (rounds == [-1]) {
     console.log('No incomplete rounds to operate on.')
     return new Response()
   }
 
-  console.log(`Using round ${round}`)
-  const roundStatus = await getRoundStatus(round)
-  console.log(`Round status: ${JSON.stringify(roundStatus)}`)
+  for (let i = 0; i < rounds.length; i++) {
+    const round = rounds[i]
 
-  const hasMined = roundStatus.hasMined
-  const hasClaimed = roundStatus.hasClaimed
-  const hasPaidOut = roundStatus.hasPaidOut
-  const nextBlockToCheck = roundStatus.nextBlockToCheck
+    console.log(`Processing round ${round}`)
+    const roundStatus = await getRoundStatus(round)
+    console.log(`Round status: ${JSON.stringify(roundStatus)}`)
 
-  console.log(`Next block to check is #${nextBlockToCheck}`)
+    const hasMined = roundStatus.hasMined
+    const hasClaimed = roundStatus.hasClaimed
+    const hasPaidOut = roundStatus.hasPaidOut
+    const nextBlockToCheck = roundStatus.nextBlockToCheck
 
-  if (!hasMined) {
-    console.log('Attempting mine...')
-    const result = await mine(round)
-    console.log('Sent mining TX')
-    return new Response(JSON.stringify(result))
-  } else {
-    if (!hasClaimed && canClaimBlock(nextBlockToCheck)) {
-      console.log(`Attempting claim on block ${nextBlockToCheck}...`)
-      const result = await claim(round)
+    console.log(`Next block to check is #${nextBlockToCheck}`)
+
+    if (!hasMined) {
+      console.log('Attempting mine...')
+      const result = await mine(round)
       console.log('Sent mining TX')
-      return new Response(JSON.stringify(result))
+      console.log(`TXID: 0x${result}`)
     } else {
-      if (!hasPaidOut) {
-        console.log('Attempting payout...')
-        const result = await payout(round)
-        console.log('Sent payout TX')
-        return new Response(JSON.stringify(result))
+      if (!hasClaimed && canClaimBlock(nextBlockToCheck)) {
+        console.log(`Attempting claim on block ${nextBlockToCheck}...`)
+        const result = await claim(round)
+        console.log('Sent mining TX')
+        console.log(`TXID: 0x${result}`)
       } else {
-        console.log('Doing nothing.')
-        // do nothing
-        return new Response()
+        if (!hasPaidOut) {
+          console.log('Attempting payout...')
+          const result = await payout(round)
+          console.log('Sent payout TX')
+          console.log(`TXID: 0x${result}`)
+        } else {
+          console.log('Doing nothing.')
+        }
       }
     }
   }
+  return new Response()
 }
