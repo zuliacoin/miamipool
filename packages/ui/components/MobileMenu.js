@@ -1,6 +1,6 @@
 import styles from '../styles/MobileMenu.module.css';
 import { useState } from 'react';
-import NavLinks from '../components/Navlinks';
+import NavLinks from './NavLinks';
 
 const MobileMenu = () => {
 
