@@ -26,7 +26,24 @@
 
 @media (max-width: 650px) {
     .snippet {
+        
         font-size: x-large;
-        width: 350px
+        width: 85%;
+    }
+}
+
+@media (max-width: 411px) {
+     .snippet {
+        margin-top: 80px;
+        font-size: x-large;
+        width: 85%;
+    }
+}
+
+@media (max-width: 370px) {
+    .snippet {
+        margin-top: -20px;
+        font-size: x-large;
+        width: 85%;
     }
 }

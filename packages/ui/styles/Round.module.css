@@ -296,7 +296,7 @@ background:rgba(190, 250, 225, 0.5); */
 
     .dashboard {
     text-align: center;
-    width: 650px;
+    width: 90%;
     height: 800px;
     border: 5px solid #FAB4FF;
     background: white;
@@ -401,7 +401,7 @@ background:rgba(190, 250, 225, 0.5); */
 
 }
 
-@media (max-width: 650px) {
+@media (max-width: 695px) {
 
     .dashboard {
     text-align: center;
@@ -492,7 +492,7 @@ background:rgba(190, 250, 225, 0.5); */
 }
 
 .hasClaimed {
-    font-size: 20px;
+    font-size: x-large;
     border: 4px solid #FFCA5F;
     border-radius: 16px;
     background: rgba(255, 202, 95, 0.35);
@@ -503,6 +503,30 @@ background:rgba(190, 250, 225, 0.5); */
     line-height: 0px;  
 }
 
+}
+
+@media (max-width: 510px) {
+
+    .dashboard {
+   text-align: center;
+    max-width: 95%;
+    height: 1100px;
+    border: 5px solid #FAB4FF;
+    background: white;
+    border-radius: 16px;
+    }
+
+    .endsAt {
+    font-size: 28px;
+    border: 4px solid #FFCA5F;
+    border-radius: 16px;
+    background: rgba(255, 202, 95, 0.35);
+    width: 95%;
+    margin-left: 20px;
+    margin-top: 20px;
+    height: 65px;
+    line-height: 0px;  
+}
 }
 
 @media (max-width: 411px) {
@@ -541,22 +565,77 @@ background:rgba(190, 250, 225, 0.5); */
 .addWithdraw input {
     margin-right: 0;
 }
+
+.endsAt {
+    font-size: x-large;
+    border: 4px solid #FFCA5F;
+    border-radius: 16px;
+    background: rgba(255, 202, 95, 0.35);
+    width: 90%;
+    margin-left: 20px;
+    margin-top: 20px;
+    height: 65px;
+    line-height: 0px;  
+}
 }
 
 @media (max-width: 400px) {
 
     .dashboard {
     text-align: center;
-    width: 350px;
+    /* width: 350px; */
     height: 1100px;
     border: 5px solid #FAB4FF;
     background: white;
     border-radius: 16px;
 }
 
+.participants {
+    font-size: 28px;
+     border: 4px solid #BFABFF;
+    border-radius: 16px;
+    background:rgba(191, 171, 255, .35);
+    width: 95%;
+    margin: auto;
+    margin-top: 20px;
+    line-height: 0px;
+}
 
+.startBlock {
+    font-size: 28px;
+    border: 4px solid #FAB4FF;
+    border-radius: 16px;
+    background: rgba(250, 180, 255, 0.35);
+    width: 95%;
+    margin: auto;
+    margin-top: 20px;
+    line-height: 0px;
+}
+
+.hasMined {
+    font-size: 28px;
+    border: 4px solid #FA2828;
+    border-radius: 16px;
+    background: rgba(250, 40, 40, 0.35);
+    width: 95%;
+    margin: auto;
+    margin-top: 20px;
+    line-height: 0px;  
+}
+.hasntMined {
+    font-size: 28px;
+    border: 4px solid #00FA05;
+    border-radius: 16px;
+    background: rgba(0, 250, 5, 0.35);
+    margin: auto;
+    width: 95%;
+    margin-top: 20px;
+    line-height: 0px;    
+}
 
 }
+
+
 
 @media (max-width: 700px) {
     .snippet {

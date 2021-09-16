@@ -44,6 +44,10 @@
 
 }
 
+.links li a:hover {
+    color: rgba(190, 0, 120, .4);
+}
+
 .links li{
     margin-right: 15px;
 }

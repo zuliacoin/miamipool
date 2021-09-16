@@ -1,11 +1,15 @@
+   .menu {
+       margin-bottom: 275px;
+   }
+   
+   
    .links {
-     /* text-align: center;
-     margin-top: 100px;
-     margin: auto; */
-    /* left: 0;
-    right: 0;
-    text-align: center; */
+position: absolute;
+left: 0;
+right: 0;
+text-align: center;
     margin-top: 100px;
+
    }
    
    .links ul {
@@ -18,6 +22,10 @@
 
 
    }
+
+   .links ul li a:hover {
+    color: rgba(190, 0, 120, .4);
+}
 
    .links ul li {
        margin-top: 5px;

@@ -11,16 +11,18 @@ const NavLinks = () => {
 
 
     return(
+<div className={styles.menu}>
 <div className={styles.links}>
 
 <ul>
 <li>Docs</li>
-<li>Github</li>
+<li><a href="https://github.com/syvita/miamipool">Github</a></li>
 <li>Discord</li>
 {userSession.isUserSignedIn() &&
 <li><button className={styles.signOutButton} onClick={handleSignOut}> Sign Out</button></li>
 }
 </ul>
+</div>
 </div>
     );
 };
