@@ -4,19 +4,21 @@
    
    
    .links {
-position: absolute;
-left: 0;
-right: 0;
-text-align: center;
-    margin-top: 100px;
+/* position: absolute;
+    left: 0;
+    right: 0;
+     text-align: center;
+    margin-top: 100px; */
 
+     position: absolute;
+    left: 0;
+    right: 35px;
+    text-align: center;
+    margin-top: 100px;
    }
    
    .links ul {
     list-style: none;
-    /* position: relative;
-    text-align: center;
-    top: 40px; */
     font-size: x-large;
     color: #ffffff; 
 
@@ -40,7 +42,9 @@ text-align: center;
 
 @media(min-width: 650px) {
 
-
+   .menu {
+display: none;
+   }
 
 .links ul {
     display: none;

@@ -261,7 +261,7 @@ export default function Round() {
                         
                         {round.hasMined &&
                             <div className={styles.hasClaimed}>
-                                {round.hasClaimed && <p>{round.blocksWon.length} blocks won / {round.totalMiaWon} $MIA</p>}
+                                {round.hasClaimed && <p className={styles.wonMia}>{round.blocksWon.length} blocks won / {round.totalMiaWon} $MIA</p>}
                                 {!round.hasClaimed && <p>Still blocks to be checked.</p>}
                             </div>
                         }
