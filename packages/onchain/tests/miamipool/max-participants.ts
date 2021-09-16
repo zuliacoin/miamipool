@@ -2078,13 +2078,18 @@ export async function testMaxParticipants() {
           [types.none()],
           deployer.address
         ),
-        Tx.contractCall("miamipool", "start-round", [], wallet_1.address),
       ]);
 
       block = chain.mineBlock([
         Tx.contractCall(
           "miamipool",
           "add-funds",
+          [types.uint(1000000)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "withdraw-funds",
           [types.uint(1000000)],
           wallet_1.address
         ),
@@ -14372,12 +14377,21 @@ export async function testMaxParticipants() {
         ),
         Tx.contractCall(
           "miamipool",
+          "principal-to-id",
+          [types.principal(wallet_1.address)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
           "get-round",
           [types.uint(1)],
           wallet_1.address
         ),
       ]);
       console.log(block.receipts[block.receipts.length - 1].result);
+      console.log(
+        "PRINCIPAL TO ID: " + block.receipts[block.receipts.length - 2].result
+      );
 
       // skip 150 blocks
       for (let i = 0; i < 150; i++) {
@@ -15722,6 +15736,402 @@ export async function testMaxParticipants() {
           [types.uint(1)],
           wallet_1.address
         ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
+        Tx.contractCall(
+          "miamipool",
+          "payout-mia",
+          [types.uint(1)],
+          wallet_1.address
+        ),
         Tx.contractCall("miamipool", "get-mia-balance", [], wallet_1.address),
 
         Tx.contractCall(
@@ -15742,15 +16152,10 @@ export async function testMaxParticipants() {
           block.receipts[block.receipts.length - 1].result
       );
 
-      console.log(
-        "Payout attempt 64: " + block.receipts[block.receipts.length - 5].result
-      );
-      console.log(
-        "Payout attempt 65: " + block.receipts[block.receipts.length - 4].result
-      );
-      console.log(
-        "Payout attempt 66: " + block.receipts[block.receipts.length - 3].result
-      );
+      for (let i = 1; i <= 70; i++) {
+        console.log("Payout attempt : " + i + " " + block.receipts[i].result);
+      }
+
       //   console.log("Round Status: " + block.receipts[3].result);
     },
   });

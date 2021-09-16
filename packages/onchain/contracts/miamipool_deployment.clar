@@ -219,8 +219,7 @@
     )
 )
 
-;;      ////    PUBLIC    \\\\       ;;
-(define-public (start-round)
+(define-private (start-round)
     (let 
         (
             (roundId (var-get lastKnownRoundId))
@@ -251,6 +250,8 @@
         (ok true)  
     )      
 )
+
+;;      ////    PUBLIC    \\\\       ;;
 
 (define-public (add-funds (amount uint))
     (begin
@@ -319,6 +320,7 @@
                 (participantId (unwrap! (get id (map-get? PrincipalToId { participant: address })) (err ERR_ID_NOT_FOUND)))
                 (participant (unwrap-panic (map-get? ParticipantsRoundHistory {id: participantId})))
                 (balance (unwrap-panic (get amount (map-get? Contributions { id: participantId, round: roundId }))))
+                (min (var-get minContribution))
             )
             (asserts! (is-some (index-of (get participantIds rounds) participantId)) (err ERR_ID_NOT_IN_ROUND))
             (asserts! (> amount u0) (err ERR_INVALID_AMOUNT))
@@ -331,7 +333,7 @@
             (asserts! (map-set ParticipantsRoundHistory {id: participantId}
                 {
                     roundsParticipated:
-                    (if (>= amount balance)
+                    (if (< (- balance amount) min)
                         (begin
                             (var-set idToRemove participantId)
                             (filter is-not-id (get roundsParticipated participant))
@@ -344,7 +346,7 @@
                 {
                     totalStx: (- (get totalStx rounds) amount),
                     participantIds: 
-                    (if (>= amount balance)
+                    (if (< (- balance amount) min)
                         (begin
                             (var-set idToRemove participantId)
                             (filter is-not-id (get participantIds rounds))
