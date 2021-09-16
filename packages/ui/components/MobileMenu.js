@@ -17,9 +17,9 @@ const MobileMenu = () => {
     return (
 
      
-<div>
+<div >
 {open ? closeMenu : hamburgerMenu}
- {open && <NavLinks/>}
+ {open && <div className={styles.dropDown}><NavLinks/></div>}
 
 </div>
  

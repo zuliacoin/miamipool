@@ -11,11 +11,18 @@ import {
 import {
     callReadOnlyFunction,
 } from '@syvita/transactions'
+import { useEffect, useState } from 'react'
 
 export default function Home({ currentRoundId }) {
     const { handleOpenAuth } = useConnect()
     const { handleSignOut } = useConnect()
-    const [userSession] = useAtom(userSessionState)        
+    const [userSession] = useAtom(userSessionState)
+
+    const [currentRound, setCurrentRound] = useState(1)
+    
+    useEffect(() => {
+        getCurrentRound().then(result => setCurrentRound(result))
+    }, [])
 
     return (
         <>  
@@ -44,7 +51,7 @@ export default function Home({ currentRoundId }) {
 
                     <button
                         
-                        onClick={() => { {Router.push('/' + currentRoundId)}}}
+                        onClick={() => { {Router.push('/' + currentRound)}}}
                     >
                         latest round
                     </button> 
@@ -55,7 +62,7 @@ export default function Home({ currentRoundId }) {
     )
 }
 
-export const getStaticProps = async () => {
+const getCurrentRound = async () => {
     let currentRoundId = await callReadOnlyFunction({
         contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
         contractName: MIAMIPOOL_CONTRACT_NAME,
@@ -66,7 +73,5 @@ export const getStaticProps = async () => {
     })
     currentRoundId = await parseInt(currentRoundId.value.value)
 
-    return {
-        props: { currentRoundId: currentRoundId }
-    }
+    return currentRoundId
 }

@@ -1,8 +1,18 @@
+   .links {
+     /* text-align: center;
+     margin-top: 100px;
+     margin: auto; */
+    /* left: 0;
+    right: 0;
+    text-align: center; */
+    margin-top: 100px;
+   }
+   
    .links ul {
     list-style: none;
-    position: relative;
+    /* position: relative;
     text-align: center;
-    top: 40px;
+    top: 40px; */
     font-size: x-large;
     color: #ffffff; 
 
