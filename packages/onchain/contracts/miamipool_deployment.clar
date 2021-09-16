@@ -210,7 +210,7 @@
         (
             (round (unwrap-panic (map-get? Rounds { id: id })))
             (blockHeight (get blockHeight round))
-            (endBlockHeight (+ blockHeight u5))
+            (endBlockHeight (+ blockHeight u15))
         )
         (if (> block-height endBlockHeight)
             true
@@ -395,9 +395,11 @@
                     (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                     (totalStx (get totalStx rounds))
                     (participantIds (get participantIds rounds))
-                    (uwu (/ totalStx u5))
+                    (uwu (/ totalStx u15))
                     (miningBlocksList 
                         (list 
+                            uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu
                             uwu uwu uwu uwu uwu
                         )
                     )
@@ -409,7 +411,7 @@
                         hasClaimed: false,
                         hasPaidOut: false,
                         nextBlockToCheck: block-height,
-                        lastBlockToCheck: (- (+ block-height u5) u1),
+                        lastBlockToCheck: (- (+ block-height u15) u1),
                         requiredPayouts: u0
                     }
                 ) (err u0))
@@ -441,7 +443,7 @@
                     {
                         totalStx: (get totalStx rounds),
                         participantIds: (get participantIds rounds),
-                        blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) nextBlockToCheck) u5)),
+                        blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) nextBlockToCheck) u15)),
                         totalMiaWon: (+ (get totalMiaWon rounds) (as-contract (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 get-coinbase-amount nextBlockToCheck))),
                         blockHeight: (get blockHeight rounds)
                     }
