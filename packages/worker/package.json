@@ -6,7 +6,8 @@
   "scripts": {
     "build": "webpack",
     "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}'",
-    "dev": "miniflare ./dist/worker.js --watch --debug"
+    "dev": "miniflare ./dist/worker.js --watch --debug",
+    "deploy": "wrangler publish"
   },
   "author": "author",
   "license": "MIT OR Apache-2.0",

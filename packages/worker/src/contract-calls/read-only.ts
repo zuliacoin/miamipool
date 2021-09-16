@@ -21,7 +21,7 @@ export async function getRoundStatus(roundId: number): Promise<{
   }
 }
 
-export async function getNextIncompleteRound(): Promise<number> {
+export async function getIncompleteRounds(): Promise<Array<number>> {
   const options = getReadonlyTxOptions([], 'get-incomplete-rounds')
   const result = await callReadOnlyFunction(options)
 
@@ -29,9 +29,16 @@ export async function getNextIncompleteRound(): Promise<number> {
   const data = result.value
 
   if (data.list[0] == undefined) {
-    return -1
+    return [-1]
   } else {
-    return parseInt(data.list[0].value)
+    var incompleteList = []
+    // @ts-ignore
+    for (let i = 0; i < data.list.length; i++) {
+      // @ts-ignore
+      incompleteList.push(parseInt(data.list[i].value))
+    }
+    console.log(`Incomplete list: ${incompleteList}`)
+    return incompleteList
   }
 }
 
