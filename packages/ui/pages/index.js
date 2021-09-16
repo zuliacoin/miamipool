@@ -32,14 +32,8 @@ export default function Home({ currentRoundId }) {
                 <>
                     <div className={styles.snippet}>
                         <p>
-                            Welcome to MiamiPool a completely trustless and
-                            decentralized mining pool for earning $MIA!</p>
-                            <p>
-                            Connect your wallet to contribute STX and mine
-                            for $MiamiCoin with a pool of others, to
-                            increase your chances of winning. For more
-                            information you can view the MiamiPool
-                            <a href="I FORGOR"> docs</a>.
+                            Welcome to MiamiPool - an entirely trustless and decentralized mining pool for $MIA!</p>
+                            <p>Connect your wallet to contribute STX and mine $MIA with others to increase your chances of winning. For more information you can view the MiamiPool <a href="I FORGOR"> docs</a>.
                         </p>
                     </div>
                     {!userSession.isUserSignedIn() && <button
