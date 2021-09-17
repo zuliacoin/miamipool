@@ -522,7 +522,7 @@
                     (var-set totalCount u0)
                     (filter next-32-values participantIds)
 
-                    (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many (map calculate-return (var-get sendManyList)))))
+                    (try! (as-contract (contract-call? 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token send-many (map calculate-return (var-get sendManyList)))))
                     
                     (asserts! (map-set RoundsStatus {id: roundId}
                         {
