@@ -184,7 +184,7 @@
             (totalMiaWon (get totalMiaWon round))
             (percent (get percent feePrincipalAndPercent))
         )
-        {to: (get principal feePrincipalAndPercent), memo: none, amount: (* percent (/ (* (/ totalMiaWon u100) u2) u100))}
+        {to: (get principal feePrincipalAndPercent), memo: none, amount: (* percent (/ (* (/ totalMiaWon u100) u3) u100))}
     )
 )
 
@@ -504,7 +504,11 @@
                 {
                     hasMined: (get hasMined roundsStatus),
                     hasClaimed: (get hasClaimed roundsStatus),
-                    hasPaidOut: true,
+                    hasPaidOut: (begin
+                                    (var-set idToRemove roundId)
+                                    (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
+                                    true
+                                ),
                     nextBlockToCheck: (get nextBlockToCheck roundsStatus),
                     lastBlockToCheck: (get lastBlockToCheck roundsStatus),
                     requiredPayouts: u0
@@ -518,7 +522,7 @@
                     (var-set totalCount u0)
                     (filter next-32-values participantIds)
 
-                    (try! (as-contract (contract-call? 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token send-many (map calculate-return (var-get sendManyList)))))
+                    (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many (map calculate-return (var-get sendManyList)))))
                     
                     (asserts! (map-set RoundsStatus {id: roundId}
                         {
@@ -531,7 +535,7 @@
                                         (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
                                         true
                                     )
-                                    (if (is-eq requiredPayout (- (/ (len participantIds) u32) u1))
+                                    (if (is-eq requiredPayout (/ (len participantIds) u32))
                                         (begin
                                                 (var-set idToRemove roundId)
                                                 (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
