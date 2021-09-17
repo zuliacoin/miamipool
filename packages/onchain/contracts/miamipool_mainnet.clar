@@ -382,7 +382,7 @@
                         requiredPayouts: u0
                     }
                 ) (err u0))
-                (ok (start-round))
+                (start-round)
             )
 
             (let
@@ -489,51 +489,65 @@
                 (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                 (blocksWon (get blocksWon rounds))
                 (participantIds (get participantIds rounds))
+                (totalMia (get totalMiaWon rounds))
                 (requiredPayout (get requiredPayouts roundsStatus))
             )
 
             (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
             (asserts! (get hasClaimed roundsStatus) (err ERR_MUST_CHECK_ALL_MINED_BLOCKS))
             (asserts! (not (get hasPaidOut roundsStatus)) (err ERR_ALL_PARTICIPANTS_PAID))
-            
 
-            (var-set roundIdToCheck roundId)
-            (if (is-eq requiredPayout u0) (try! (payout-fee)) false)
-            
             (var-set sendManyList (list))
-            (var-set payoutNum requiredPayout)
-            (var-set totalCount u0)
-            (filter next-32-values participantIds)
 
-            (try! (as-contract (contract-call? 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token send-many (map calculate-return (var-get sendManyList)))))
-            
-            (asserts! (map-set RoundsStatus {id: roundId}
+            (if (is-eq totalMia u0)
+                (asserts! (map-set RoundsStatus {id: roundId}
                 {
                     hasMined: (get hasMined roundsStatus),
                     hasClaimed: (get hasClaimed roundsStatus),
-                    hasPaidOut: 
-                         (if (is-eq (/ (len participantIds) u32) u0)
-                            (begin
-                                (var-set idToRemove roundId)
-                                (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
-                                true
-                            )
-                            (if (is-eq requiredPayout (- (/ (len participantIds) u32) u1))
-                                (begin
+                    hasPaidOut: true,
+                    nextBlockToCheck: (get nextBlockToCheck roundsStatus),
+                    lastBlockToCheck: (get lastBlockToCheck roundsStatus),
+                    requiredPayouts: u0
+                }
+                ) (err u0))
+                (begin
+                    (var-set roundIdToCheck roundId)
+                    (if (is-eq requiredPayout u0) (try! (payout-fee)) false)
+                    
+                    (var-set payoutNum requiredPayout)
+                    (var-set totalCount u0)
+                    (filter next-32-values participantIds)
+
+                    (try! (as-contract (contract-call? 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token send-many (map calculate-return (var-get sendManyList)))))
+                    
+                    (asserts! (map-set RoundsStatus {id: roundId}
+                        {
+                            hasMined: (get hasMined roundsStatus),
+                            hasClaimed: (get hasClaimed roundsStatus),
+                            hasPaidOut: 
+                                (if (is-eq (/ (len participantIds) u32) u0)
+                                    (begin
                                         (var-set idToRemove roundId)
                                         (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
                                         true
-                                ) 
-                                false
-                            )
-                        ),
-                    nextBlockToCheck: (get nextBlockToCheck roundsStatus),
-                    lastBlockToCheck: (get lastBlockToCheck roundsStatus),
-                    requiredPayouts: (+ requiredPayout u1)
-                }
-            ) (err u0))
-
-            (ok (var-get sendManyList))
+                                    )
+                                    (if (is-eq requiredPayout (- (/ (len participantIds) u32) u1))
+                                        (begin
+                                                (var-set idToRemove roundId)
+                                                (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
+                                                true
+                                        ) 
+                                        false
+                                    )
+                                ),
+                            nextBlockToCheck: (get nextBlockToCheck roundsStatus),
+                            lastBlockToCheck: (get lastBlockToCheck roundsStatus),
+                            requiredPayouts: (+ requiredPayout u1)
+                        }
+                    ) (err u0))
+                )
+            )
+           (ok (var-get sendManyList))    
         )
     )
 )
