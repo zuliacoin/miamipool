@@ -11,4 +11,4 @@ command = "yarn && yarn format && yarn build"
 format = "service-worker"
 
 [triggers]
-crons = ["*/10 * * * *"]
+crons = ["*/5 * * * *"]
