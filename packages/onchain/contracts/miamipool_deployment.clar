@@ -46,9 +46,9 @@
 
 (define-data-var feePrincipals (list 3 {principal: principal, percent: uint}) 
     (list
-        {principal: 'SP1FKRSMJADD20VRAZ0FC8EMFZ128GZSF08BEYV86, percent: u55} ;; invidia
-        {principal: 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66, percent: u25} ;; asteria
-        {principal: 'SP3XJTH5TJ3PEE67T02AA4DSBC89A80S028SQS769, percent: u20} ;; dio
+        {principal: 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5, percent: u55} ;; invidia
+        {principal: 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG, percent: u25} ;; asteria
+        {principal: 'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC, percent: u20} ;; dio
     )
 )
 
@@ -217,7 +217,7 @@
             (payoutFeeList (map calculate-fee (var-get feePrincipals)))
         )
         (begin
-            (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many (unwrap-panic (as-max-len? payoutFeeList u3)))))   
+            (try! (as-contract (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-token send-many (unwrap-panic (as-max-len? payoutFeeList u3)))))   
             (ok true)
         )
     )
@@ -421,7 +421,7 @@
                         )
                     )
                 )
-                (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 mine-many miningBlocksList)))
+                (try! (as-contract (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 mine-many miningBlocksList)))
                 (asserts! (map-set RoundsStatus {id: roundId}
                     {
                         hasMined: true,
@@ -446,7 +446,7 @@
             (roundsStatus (unwrap-panic (map-get? RoundsStatus {id: roundId})))
             (nextBlockToCheck (get nextBlockToCheck roundsStatus))
             (lastBlockToCheck (get lastBlockToCheck roundsStatus))
-            (isWinner (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 can-claim-mining-reward MIA_CONTRACT_ADDRESS nextBlockToCheck)))
+            (isWinner (as-contract (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 can-claim-mining-reward MIA_CONTRACT_ADDRESS nextBlockToCheck)))
             
         )
         (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
@@ -455,13 +455,13 @@
 
         (if isWinner
             (begin 
-                (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 claim-mining-reward nextBlockToCheck)))
+                (try! (as-contract (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 claim-mining-reward nextBlockToCheck)))
                 (asserts! (map-set Rounds {id: roundId}
                     {
                         totalStx: (get totalStx rounds),
                         participantIds: (get participantIds rounds),
                         blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) nextBlockToCheck) u15)),
-                        totalMiaWon: (+ (get totalMiaWon rounds) (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 get-coinbase-amount nextBlockToCheck))),
+                        totalMiaWon: (+ (get totalMiaWon rounds) (as-contract (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 get-coinbase-amount nextBlockToCheck))),
                         blockHeight: (get blockHeight rounds)
                     }
                 ) (err u0))
@@ -536,7 +536,7 @@
                     (var-set totalCount u0)
                     (filter next-32-values participantIds)
 
-                    (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many (map calculate-return (var-get sendManyList)))))
+                    (try! (as-contract (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-token send-many (map calculate-return (var-get sendManyList)))))
                     
                     (asserts! (map-set RoundsStatus {id: roundId}
                         {
@@ -622,7 +622,7 @@
 )
 
 (define-read-only (get-mia-balance)
-    (ok (unwrap-panic (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token get-balance MIA_CONTRACT_ADDRESS))))
+    (ok (unwrap-panic (as-contract (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-token get-balance MIA_CONTRACT_ADDRESS))))
 )
 
 (define-read-only (get-stx-balance)

@@ -7,7 +7,7 @@ export const MIAMIPOOL_ADDY = 'ST2J2ASASFAS80NGCVP2CVKDCSPR2GF2DQG9V5E3H'
 export const API_SERVER = 'https://stacks-node-api.testnet.stacks.co'
 // export const API_SERVER = 'https://stacks-node-api.mainnet.stacks.co'
 
-export const MIAMIPOOL_NAME = 'resident-bronze-marmot'
+export const MIAMIPOOL_NAME = 'severe-amethyst-catfish'
 
 export const MATURITY_LEN = 10
 // export const MATURITY_LEN = 100
