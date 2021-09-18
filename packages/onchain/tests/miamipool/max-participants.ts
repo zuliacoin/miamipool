@@ -14333,48 +14333,48 @@ export async function testMaxParticipants() {
           [types.uint(705984837)],
           wallet_2041.address
         ),
-        Tx.contractCall(
-          "miamipool",
-          "add-funds",
-          [types.uint(224310683)],
-          wallet_2042.address
-        ),
-        Tx.contractCall(
-          "miamipool",
-          "add-funds",
-          [types.uint(529001960)],
-          wallet_2043.address
-        ),
-        Tx.contractCall(
-          "miamipool",
-          "add-funds",
-          [types.uint(56441522)],
-          wallet_2044.address
-        ),
-        Tx.contractCall(
-          "miamipool",
-          "add-funds",
-          [types.uint(642542274)],
-          wallet_2045.address
-        ),
-        Tx.contractCall(
-          "miamipool",
-          "add-funds",
-          [types.uint(217603767)],
-          wallet_2046.address
-        ),
-        Tx.contractCall(
-          "miamipool",
-          "add-funds",
-          [types.uint(929333517)],
-          wallet_2047.address
-        ),
-        Tx.contractCall(
-          "miamipool",
-          "add-funds",
-          [types.uint(431069945)],
-          wallet_2048.address
-        ),
+        // Tx.contractCall(
+        //   "miamipool",
+        //   "add-funds",
+        //   [types.uint(224310683)],
+        //   wallet_2042.address
+        // ),
+        // Tx.contractCall(
+        //   "miamipool",
+        //   "add-funds",
+        //   [types.uint(529001960)],
+        //   wallet_2043.address
+        // ),
+        // Tx.contractCall(
+        //   "miamipool",
+        //   "add-funds",
+        //   [types.uint(56441522)],
+        //   wallet_2044.address
+        // ),
+        // Tx.contractCall(
+        //   "miamipool",
+        //   "add-funds",
+        //   [types.uint(642542274)],
+        //   wallet_2045.address
+        // ),
+        // Tx.contractCall(
+        //   "miamipool",
+        //   "add-funds",
+        //   [types.uint(217603767)],
+        //   wallet_2046.address
+        // ),
+        // Tx.contractCall(
+        //   "miamipool",
+        //   "add-funds",
+        //   [types.uint(929333517)],
+        //   wallet_2047.address
+        // ),
+        // Tx.contractCall(
+        //   "miamipool",
+        //   "add-funds",
+        //   [types.uint(431069945)],
+        //   wallet_2048.address
+        // ),
         Tx.contractCall(
           "miamipool",
           "principal-to-id",
@@ -16132,6 +16132,35 @@ export async function testMaxParticipants() {
           [types.uint(1)],
           wallet_1.address
         ),
+        Tx.contractCall(
+          "miamipool",
+          "get-many-rounds",
+          [
+            types.list([
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+              types.uint(1),
+            ]),
+          ],
+          wallet_1.address
+        ),
         Tx.contractCall("miamipool", "get-mia-balance", [], wallet_1.address),
 
         Tx.contractCall(
@@ -16155,8 +16184,9 @@ export async function testMaxParticipants() {
       for (let i = 1; i <= 70; i++) {
         console.log("Payout attempt : " + i + " " + block.receipts[i].result);
       }
-
-      //   console.log("Round Status: " + block.receipts[3].result);
+      // console.log(
+      //   "get-round-many " + block.receipts[block.receipts.length - 3].result
+      // );
     },
   });
 }

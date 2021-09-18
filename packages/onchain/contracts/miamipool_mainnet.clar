@@ -176,6 +176,29 @@
     )
 )
 
+(define-private (get-round-info (roundId uint))
+    (let
+        (
+            (round (unwrap-panic (map-get? Rounds { id: roundId })))
+            (roundsStatus (unwrap-panic (map-get? RoundsStatus { id: roundId })))
+        )
+        {
+            roundId: roundId,
+            totalStx: (get totalStx round),
+            participantIds: (get participantIds round),
+            blocksWon: (get blocksWon round),
+            totalMiaWon: (get totalMiaWon round),
+            blockHeight: (get blockHeight round),
+            hasMined: (get hasMined roundsStatus),
+            hasClaimed: (get hasClaimed roundsStatus),
+            hasPaidOut: (get hasPaidOut roundsStatus),
+            nextBlockToCheck: (get nextBlockToCheck roundsStatus),
+            lastBlockToCheck: (get lastBlockToCheck roundsStatus),
+            requiredPayouts: (get requiredPayouts roundsStatus),    
+        }
+    )
+)
+
 (define-private (calculate-fee (feePrincipalAndPercent {principal: principal, percent: uint}))
     (let
         (
@@ -597,6 +620,10 @@
             }
         )
     )
+)
+
+(define-read-only (get-many-rounds (roundsList (list 20 uint)))
+    (ok (map get-round-info roundsList))
 )
 
 (define-read-only (get-round-status (id uint))
