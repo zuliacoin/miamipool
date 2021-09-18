@@ -46,9 +46,9 @@
 
 (define-data-var feePrincipals (list 3 {principal: principal, percent: uint}) 
     (list
-        {principal: 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5, percent: u55} ;; invidia
-        {principal: 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG, percent: u25} ;; asteria
-        {principal: 'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC, percent: u20} ;; dio
+        {principal: 'SP1FKRSMJADD20VRAZ0FC8EMFZ128GZSF08BEYV86, percent: u55} ;; invidia
+        {principal: 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66, percent: u25} ;; asteria
+        {principal: 'SP3XJTH5TJ3PEE67T02AA4DSBC89A80S028SQS769, percent: u20} ;; dio
     )
 )
 
@@ -184,17 +184,8 @@
         )
         {
             roundId: roundId,
-            totalStx: (get totalStx round),
-            participantIds: (get participantIds round),
-            blocksWon: (get blocksWon round),
-            totalMiaWon: (get totalMiaWon round),
-            blockHeight: (get blockHeight round),
-            hasMined: (get hasMined roundsStatus),
-            hasClaimed: (get hasClaimed roundsStatus),
-            hasPaidOut: (get hasPaidOut roundsStatus),
-            nextBlockToCheck: (get nextBlockToCheck roundsStatus),
-            lastBlockToCheck: (get lastBlockToCheck roundsStatus),
-            requiredPayouts: (get requiredPayouts roundsStatus),    
+            round: round,
+            roundsStatus: roundsStatus   
         }
     )
 )
@@ -228,7 +219,7 @@
         (
             (round (unwrap-panic (map-get? Rounds { id: id })))
             (blockHeight (get blockHeight round))
-            (endBlockHeight (+ blockHeight u150))
+            (endBlockHeight (+ blockHeight u15))
         )
         (if (> block-height endBlockHeight)
             true
@@ -414,18 +405,9 @@
                     (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                     (totalStx (get totalStx rounds))
                     (participantIds (get participantIds rounds))
-                    (uwu (/ totalStx u150))
+                    (uwu (/ totalStx u15))
                     (miningBlocksList 
                         (list 
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
                             uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
                         )
                     )
@@ -437,7 +419,7 @@
                         hasClaimed: false,
                         hasPaidOut: false,
                         nextBlockToCheck: block-height,
-                        lastBlockToCheck: (- (+ block-height u150) u1),
+                        lastBlockToCheck: (- (+ block-height u15) u1),
                         requiredPayouts: u0
                     }
                 ) (err u0))
@@ -459,7 +441,7 @@
             
         )
         (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
-        (asserts! (> block-height (+ nextBlockToCheck u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
+        (asserts! (> block-height (+ nextBlockToCheck u10)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
         (asserts! (not (get hasClaimed roundsStatus)) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
 
         (if isWinner
@@ -469,7 +451,7 @@
                     {
                         totalStx: (get totalStx rounds),
                         participantIds: (get participantIds rounds),
-                        blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) nextBlockToCheck) u150)),
+                        blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) nextBlockToCheck) u15)),
                         totalMiaWon: (+ (get totalMiaWon rounds) (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-core-v1 get-coinbase-amount nextBlockToCheck))),
                         blockHeight: (get blockHeight rounds)
                     }
@@ -622,7 +604,7 @@
     )
 )
 
-(define-read-only (get-many-rounds (roundsList (list 20 uint)))
+(define-read-only (get-many-rounds (roundsList (list 26 uint)))
     (ok (map get-round-info roundsList))
 )
 

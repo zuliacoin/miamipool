@@ -184,17 +184,8 @@
         )
         {
             roundId: roundId,
-            totalStx: (get totalStx round),
-            participantIds: (get participantIds round),
-            blocksWon: (get blocksWon round),
-            totalMiaWon: (get totalMiaWon round),
-            blockHeight: (get blockHeight round),
-            hasMined: (get hasMined roundsStatus),
-            hasClaimed: (get hasClaimed roundsStatus),
-            hasPaidOut: (get hasPaidOut roundsStatus),
-            nextBlockToCheck: (get nextBlockToCheck roundsStatus),
-            lastBlockToCheck: (get lastBlockToCheck roundsStatus),
-            requiredPayouts: (get requiredPayouts roundsStatus),    
+            round: round,
+            roundsStatus: roundsStatus   
         }
     )
 )
@@ -622,7 +613,7 @@
     )
 )
 
-(define-read-only (get-many-rounds (roundsList (list 20 uint)))
+(define-read-only (get-many-rounds (roundsList (list 26 uint)))
     (ok (map get-round-info roundsList))
 )
 
