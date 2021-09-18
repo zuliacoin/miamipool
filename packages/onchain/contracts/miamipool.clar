@@ -62,7 +62,7 @@
     { id: uint }
     {
         totalStx: uint,
-        participantIds: (list 2048 uint),
+        participantIds: (list 1024 uint),
         blocksWon: (list 150 uint),
         totalMiaWon: uint,
         blockHeight: uint
@@ -134,7 +134,7 @@
   (not (is-eq id (var-get idToRemove)))
 )
 
-(define-private (next-32-values (participantId uint)) 
+(define-private (next-16-values (participantId uint)) 
   (let
     (
         (count (var-get totalCount))
@@ -142,12 +142,12 @@
     )
 
     (if (is-eq requiredPayout u0)
-        (if (and (>= count u0) (< count u32))
-            (var-set sendManyList (unwrap-panic (as-max-len? (append (var-get sendManyList) participantId) u32)))
+        (if (and (>= count u0) (< count u16))
+            (var-set sendManyList (unwrap-panic (as-max-len? (append (var-get sendManyList) participantId) u16)))
             false
         )
-        (if (and (>= count (* requiredPayout u32)) (< count (* (+ requiredPayout u1) u32)))
-            (var-set sendManyList (unwrap-panic (as-max-len? (append (var-get sendManyList) participantId) u32)))
+        (if (and (>= count (* requiredPayout u16)) (< count (* (+ requiredPayout u1) u16)))
+            (var-set sendManyList (unwrap-panic (as-max-len? (append (var-get sendManyList) participantId) u16)))
             false
         )
     )
@@ -308,7 +308,7 @@
                     participantIds: 
                     (match (index-of (get participantIds rounds) participantId) val
                         (get participantIds rounds)
-                        (unwrap-panic (as-max-len? (append (get participantIds rounds) participantId) u2048))
+                        (unwrap-panic (as-max-len? (append (get participantIds rounds) participantId) u1024))
                     ),
                     blocksWon: (get blocksWon rounds),
                     totalMiaWon: (get totalMiaWon rounds),
@@ -525,7 +525,7 @@
                     
                     (var-set payoutNum requiredPayout)
                     (var-set totalCount u0)
-                    (filter next-32-values participantIds)
+                    (filter next-16-values participantIds)
 
                     (try! (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.citycoin-token send-many (map calculate-return (var-get sendManyList)))))
                     
@@ -534,13 +534,13 @@
                             hasMined: (get hasMined roundsStatus),
                             hasClaimed: (get hasClaimed roundsStatus),
                             hasPaidOut: 
-                                (if (is-eq (/ (len participantIds) u32) u0)
+                                (if (is-eq (/ (len participantIds) u16) u0)
                                     (begin
                                         (var-set idToRemove roundId)
                                         (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
                                         true
                                     )
-                                    (if (is-eq requiredPayout (/ (len participantIds) u32))
+                                    (if (is-eq requiredPayout (/ (len participantIds) u16))
                                         (begin
                                                 (var-set idToRemove roundId)
                                                 (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))

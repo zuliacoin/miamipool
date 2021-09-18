@@ -62,7 +62,7 @@
     { id: uint }
     {
         totalStx: uint,
-        participantIds: (list 2048 uint),
+        participantIds: (list 1024 uint),
         blocksWon: (list 150 uint),
         totalMiaWon: uint,
         blockHeight: uint
@@ -134,7 +134,7 @@
   (not (is-eq id (var-get idToRemove)))
 )
 
-(define-private (next-32-values (participantId uint)) 
+(define-private (next-16-values (participantId uint)) 
   (let
     (
         (count (var-get totalCount))
@@ -142,12 +142,12 @@
     )
 
     (if (is-eq requiredPayout u0)
-        (if (and (>= count u0) (< count u32))
-            (var-set sendManyList (unwrap-panic (as-max-len? (append (var-get sendManyList) participantId) u32)))
+        (if (and (>= count u0) (< count u16))
+            (var-set sendManyList (unwrap-panic (as-max-len? (append (var-get sendManyList) participantId) u16)))
             false
         )
-        (if (and (>= count (* requiredPayout u32)) (< count (* (+ requiredPayout u1) u32)))
-            (var-set sendManyList (unwrap-panic (as-max-len? (append (var-get sendManyList) participantId) u32)))
+        (if (and (>= count (* requiredPayout u16)) (< count (* (+ requiredPayout u1) u16)))
+            (var-set sendManyList (unwrap-panic (as-max-len? (append (var-get sendManyList) participantId) u16)))
             false
         )
     )
@@ -219,7 +219,7 @@
         (
             (round (unwrap-panic (map-get? Rounds { id: id })))
             (blockHeight (get blockHeight round))
-            (endBlockHeight (+ blockHeight u15))
+            (endBlockHeight (+ blockHeight u5))
         )
         (if (> block-height endBlockHeight)
             true
@@ -308,7 +308,7 @@
                     participantIds: 
                     (match (index-of (get participantIds rounds) participantId) val
                         (get participantIds rounds)
-                        (unwrap-panic (as-max-len? (append (get participantIds rounds) participantId) u2048))
+                        (unwrap-panic (as-max-len? (append (get participantIds rounds) participantId) u1024))
                     ),
                     blocksWon: (get blocksWon rounds),
                     totalMiaWon: (get totalMiaWon rounds),
@@ -382,9 +382,6 @@
             )
             (asserts! (not hasMined) (err ERR_ALREADY_MINED))
             (asserts! (is-round-expired roundId) (err ERR_CANNOT_MINE_IF_ROUND_ACTIVE))
-        )
-        
-        (if (< (get totalStx (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND))) u1500000)
             (begin
                 (asserts! (map-set RoundsStatus {id: roundId} 
                     {
@@ -405,10 +402,10 @@
                     (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                     (totalStx (get totalStx rounds))
                     (participantIds (get participantIds rounds))
-                    (uwu (/ totalStx u15))
+                    (uwu (/ totalStx u5))
                     (miningBlocksList 
                         (list 
-                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu
                         )
                     )
                 )
@@ -419,7 +416,7 @@
                         hasClaimed: false,
                         hasPaidOut: false,
                         nextBlockToCheck: block-height,
-                        lastBlockToCheck: (- (+ block-height u15) u1),
+                        lastBlockToCheck: (- (+ block-height u5) u1),
                         requiredPayouts: u0
                     }
                 ) (err u0))
@@ -451,7 +448,7 @@
                     {
                         totalStx: (get totalStx rounds),
                         participantIds: (get participantIds rounds),
-                        blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) nextBlockToCheck) u15)),
+                        blocksWon: (unwrap-panic (as-max-len? (append (get blocksWon rounds) nextBlockToCheck) u5)),
                         totalMiaWon: (+ (get totalMiaWon rounds) (as-contract (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-core-v4 get-coinbase-amount nextBlockToCheck))),
                         blockHeight: (get blockHeight rounds)
                     }
@@ -525,7 +522,7 @@
                     
                     (var-set payoutNum requiredPayout)
                     (var-set totalCount u0)
-                    (filter next-32-values participantIds)
+                    (filter next-16-values participantIds)
 
                     (try! (as-contract (contract-call? 'ST3CK642B6119EVC6CT550PW5EZZ1AJW6608HK60A.citycoin-token send-many (map calculate-return (var-get sendManyList)))))
                     
@@ -534,13 +531,13 @@
                             hasMined: (get hasMined roundsStatus),
                             hasClaimed: (get hasClaimed roundsStatus),
                             hasPaidOut: 
-                                (if (is-eq (/ (len participantIds) u32) u0)
+                                (if (is-eq (/ (len participantIds) u16) u0)
                                     (begin
                                         (var-set idToRemove roundId)
                                         (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
                                         true
                                     )
-                                    (if (is-eq requiredPayout (/ (len participantIds) u32))
+                                    (if (is-eq requiredPayout (/ (len participantIds) u16))
                                         (begin
                                                 (var-set idToRemove roundId)
                                                 (var-set incompleteRounds (filter is-not-id (var-get incompleteRounds)))
