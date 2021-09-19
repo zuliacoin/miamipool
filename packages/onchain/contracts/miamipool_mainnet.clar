@@ -176,20 +176,6 @@
     )
 )
 
-(define-private (get-round-info (roundId uint))
-    (let
-        (
-            (round (unwrap-panic (map-get? Rounds { id: roundId })))
-            (roundsStatus (unwrap-panic (map-get? RoundsStatus { id: roundId })))
-        )
-        {
-            roundId: roundId,
-            round: round,
-            roundsStatus: roundsStatus   
-        }
-    )
-)
-
 (define-private (calculate-fee (feePrincipalAndPercent {principal: principal, percent: uint}))
     (let
         (
@@ -613,8 +599,13 @@
     )
 )
 
-(define-read-only (get-many-rounds (roundsList (list 26 uint)))
-    (ok (map get-round-info roundsList))
+(define-read-only (get-round-and-status (id uint))
+    (ok
+        {
+            round: (unwrap-panic (map-get? Rounds { id: id })),
+            roundsStatus: (unwrap-panic (map-get? RoundsStatus { id: id }))   
+        }
+    )
 )
 
 (define-read-only (get-round-status (id uint))

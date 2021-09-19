@@ -176,20 +176,6 @@
     )
 )
 
-(define-private (get-round-info (roundId uint))
-    (let
-        (
-            (round (unwrap-panic (map-get? Rounds { id: roundId })))
-            (roundsStatus (unwrap-panic (map-get? RoundsStatus { id: roundId })))
-        )
-        {
-            roundId: roundId,
-            round: round,
-            roundsStatus: roundsStatus   
-        }
-    )
-)
-
 (define-private (calculate-fee (feePrincipalAndPercent {principal: principal, percent: uint}))
     (let
         (
@@ -382,6 +368,9 @@
             )
             (asserts! (not hasMined) (err ERR_ALREADY_MINED))
             (asserts! (is-round-expired roundId) (err ERR_CANNOT_MINE_IF_ROUND_ACTIVE))
+        )
+        
+        (if (< (get totalStx (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND))) u1500000)
             (begin
                 (asserts! (map-set RoundsStatus {id: roundId} 
                     {
@@ -405,7 +394,7 @@
                     (uwu (/ totalStx u5))
                     (miningBlocksList 
                         (list 
-                            uwu uwu uwu uwu uwu
+                            uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
                         )
                     )
                 )
@@ -601,8 +590,13 @@
     )
 )
 
-(define-read-only (get-many-rounds (roundsList (list 26 uint)))
-    (ok (map get-round-info roundsList))
+(define-read-only (get-round-and-status (id uint))
+    (ok
+        {
+            round: (unwrap-panic (map-get? Rounds { id: id })),
+            roundsStatus: (unwrap-panic (map-get? RoundsStatus { id: id }))   
+        }
+    )
 )
 
 (define-read-only (get-round-status (id uint))
