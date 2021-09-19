@@ -12,7 +12,7 @@ export const MIAMIPOOL_NAME = 'yawning-purple-raccoon'
 export const MATURITY_LEN = 10
 // export const MATURITY_LEN = 100
 
-export const ROUND_LEN = 15
+export const ROUND_LEN = 5
 // export const ROUND_LEN = 150
 
 export const NETWORK = new StacksTestnet()
