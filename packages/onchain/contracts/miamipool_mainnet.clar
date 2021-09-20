@@ -39,21 +39,23 @@
 (define-data-var lastKnownRoundId uint u0)
 (define-data-var incompleteRounds (list 100 uint) (list))
 
-
 ;;      ////    CONFIG    \\\\      ;;
 
-(define-data-var minContribution uint u1000000)
+(define-constant roundLen u150)
+(define-constant tokenRewardMaturity u100)
+(define-constant minContribution u1000000)
 
-(define-data-var feePrincipals (list 3 {principal: principal, percent: uint}) 
+(define-data-var feePrincipals (list 5 {principal: principal, percent: uint}) 
     (list
-        {principal: 'SP1FKRSMJADD20VRAZ0FC8EMFZ128GZSF08BEYV86, percent: u55} ;; invidia
-        {principal: 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66, percent: u25} ;; asteria
-        {principal: 'SP3XJTH5TJ3PEE67T02AA4DSBC89A80S028SQS769, percent: u20} ;; dio
+        {principal: 'SP1FKRSMJADD20VRAZ0FC8EMFZ128GZSF08BEYV86, percent: u500} ;; 50% invidia
+        {principal: 'SP343J7DNE122AVCSC4HEK4MF871PW470ZSXJ5K66, percent: u250} ;; 25% asteria
+        {principal: 'SP3XJTH5TJ3PEE67T02AA4DSBC89A80S028SQS769, percent: u200} ;; 20% diopitis
+        {principal: 'SP3T0HKSC8EKTKEPVJ9896X59RAEFT3GSMX71V7XB, percent: u25 } ;; 2.5% BowTiedMooneeb
+        {principal: 'SP26Z6SEXDKTW5KVS3KD01Z9W73RENRVPTCB0DRPM, percent: u25 } ;; 2.5% buildingpjs
     )
 )
 
 (define-constant MIA_CONTRACT_ADDRESS (as-contract tx-sender))
-
 
 ;;      ////    STORAGE    \\\\     ;;
 
@@ -106,7 +108,6 @@
     { id: uint }
 )
 
-
 ;;      ////    PRIVATE    \\\\       ;;
 
 ;; returns participant id if it has been created, or creates and returns new ID
@@ -156,6 +157,20 @@
   )
 )
 
+(define-private (get-round-info (roundId uint))
+    (let
+        (
+            (round (unwrap-panic (map-get? Rounds { id: roundId })))
+            (roundsStatus (unwrap-panic (map-get? RoundsStatus { id: roundId })))
+        )
+        {
+            roundId: roundId,
+            round: round,
+            roundsStatus: roundsStatus   
+        }
+    )
+)
+
 (define-private (calculate-return (participantId uint))
     (let
         (
@@ -184,7 +199,7 @@
             (totalMiaWon (get totalMiaWon round))
             (percent (get percent feePrincipalAndPercent))
         )
-        {to: (get principal feePrincipalAndPercent), memo: none, amount: (* percent (/ (* (/ totalMiaWon u100) u3) u100))}
+        {to: (get principal feePrincipalAndPercent), memo: none, amount: (/ (* percent (* (/ totalMiaWon u100) u3)) u1000)}
     )
 )
 
@@ -194,7 +209,7 @@
             (payoutFeeList (map calculate-fee (var-get feePrincipals)))
         )
         (begin
-            (try! (as-contract (contract-call? 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token send-many (unwrap-panic (as-max-len? payoutFeeList u3)))))   
+            (try! (as-contract (contract-call? 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token send-many (unwrap-panic (as-max-len? payoutFeeList u5)))))   
             (ok true)
         )
     )
@@ -205,7 +220,7 @@
         (
             (round (unwrap-panic (map-get? Rounds { id: id })))
             (blockHeight (get blockHeight round))
-            (endBlockHeight (+ blockHeight u150))
+            (endBlockHeight (+ blockHeight roundLen))
         )
         (if (> block-height endBlockHeight)
             true
@@ -246,7 +261,6 @@
     )      
 )
 
-
 ;;      ////    PUBLIC    \\\\       ;;
 
 (define-public (add-funds (amount uint))
@@ -260,7 +274,7 @@
                 (rounds (unwrap! (map-get? Rounds {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
             )
 
-            (asserts! (>= amount (var-get minContribution)) (err ERR_CONTRIBUTION_TOO_LOW))
+            (asserts! (>= amount minContribution) (err ERR_CONTRIBUTION_TOO_LOW))
             (asserts! (not (is-round-expired roundId)) (err ERR_CANNOT_MODIFY_FUNDS_OF_EXPIRED_ROUND))
 
             (try! (stx-transfer? amount address MIA_CONTRACT_ADDRESS))
@@ -316,7 +330,6 @@
                 (participantId (unwrap! (get id (map-get? PrincipalToId { participant: address })) (err ERR_ID_NOT_FOUND)))
                 (participant (unwrap-panic (map-get? ParticipantsRoundHistory {id: participantId})))
                 (balance (unwrap-panic (get amount (map-get? Contributions { id: participantId, round: roundId }))))
-                (min (var-get minContribution))
             )
             (asserts! (is-some (index-of (get participantIds rounds) participantId)) (err ERR_ID_NOT_IN_ROUND))
             (asserts! (> amount u0) (err ERR_INVALID_AMOUNT))
@@ -329,7 +342,7 @@
             (asserts! (map-set ParticipantsRoundHistory {id: participantId}
                 {
                     roundsParticipated:
-                    (if (< (- balance amount) min)
+                    (if (< (- balance amount) minContribution)
                         (begin
                             (var-set idToRemove participantId)
                             (filter is-not-id (get roundsParticipated participant))
@@ -342,7 +355,7 @@
                 {
                     totalStx: (- (get totalStx rounds) amount),
                     participantIds: 
-                    (if (< (- balance amount) min)
+                    (if (< (- balance amount) minContribution)
                         (begin
                             (var-set idToRemove participantId)
                             (filter is-not-id (get participantIds rounds))
@@ -391,7 +404,7 @@
                     (roundsStatus (unwrap! (map-get? RoundsStatus {id: roundId}) (err ERR_ROUND_NOT_FOUND)))
                     (totalStx (get totalStx rounds))
                     (participantIds (get participantIds rounds))
-                    (uwu (/ totalStx u150))
+                    (uwu (/ totalStx roundLen))
                     (miningBlocksList 
                         (list 
                             uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu uwu
@@ -414,7 +427,7 @@
                         hasClaimed: false,
                         hasPaidOut: false,
                         nextBlockToCheck: block-height,
-                        lastBlockToCheck: (- (+ block-height u150) u1),
+                        lastBlockToCheck: (- (+ block-height roundLen) u1),
                         requiredPayouts: u0
                     }
                 ) (err u0))
@@ -436,7 +449,7 @@
             
         )
         (asserts! (get hasMined roundsStatus) (err ERR_MINING_NOT_STARTED))
-        (asserts! (> block-height (+ nextBlockToCheck u100)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
+        (asserts! (> block-height (+ nextBlockToCheck tokenRewardMaturity)) (err ERR_WAIT_100_BLOCKS_BEFORE_CHECKING))
         (asserts! (not (get hasClaimed roundsStatus)) (err ERR_ALL_POSSIBLE_BLOCKS_CHECKED))
 
         (if isWinner
@@ -556,7 +569,6 @@
     )
 )
 
-
 ;;      ////    READ-ONLY    \\\\     ;;
 
 (define-read-only (get-participant-round-history (id uint))
@@ -571,32 +583,12 @@
     (ok (unwrap-panic (get participant (map-get? IdToPrincipal { id: id }))))
 )
 
-(define-read-only (get-min-contribution)
-    (ok (var-get minContribution))
-)
-
 (define-read-only (get-contribution (id uint) (round uint))
     (ok (unwrap-panic (get amount (map-get? Contributions { id: id, round: round }))))
 )
 
 (define-read-only (get-current-round-id)
     (ok (var-get lastKnownRoundId))
-)
-
-(define-read-only (get-round (id uint))
-    (let
-        ((rounds (unwrap! (map-get? Rounds {id: id}) (err ERR_ROUND_NOT_FOUND))))
-        (ok 
-            {
-                totalStx: (get totalStx rounds),
-                participantIds: (get participantIds rounds),
-                blocksWon: (get blocksWon rounds),
-                totalMiaWon: (get totalMiaWon rounds),
-                blockHeight: (get blockHeight rounds),
-                participantAddresses: (map id-to-principal (get participantIds rounds))
-            }
-        )
-    )
 )
 
 (define-read-only (get-round-and-status (id uint))
@@ -608,20 +600,12 @@
     )
 )
 
-(define-read-only (get-round-status (id uint))
-    (ok (unwrap! (map-get? RoundsStatus { id: id }) (err ERR_ROUND_NOT_FOUND)))
-)
-
-(define-read-only (get-mia-balance)
-    (ok (unwrap-panic (as-contract (contract-call? 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.miamicoin-token get-balance MIA_CONTRACT_ADDRESS))))
-)
-
-(define-read-only (get-stx-balance)
-    (ok (stx-get-balance MIA_CONTRACT_ADDRESS))
-)
-
 (define-read-only (get-incomplete-rounds)
     (ok (var-get incompleteRounds))
+)
+
+(define-read-only (get-many-rounds (roundsList (list 26 uint)))
+    (ok (map get-round-info roundsList))
 )
 
 (start-round)

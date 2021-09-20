@@ -14395,7 +14395,7 @@ export async function testMaxParticipants() {
         ),
         Tx.contractCall(
           "miamipool",
-          "get-round",
+          "get-round-and-status",
           [types.uint(1)],
           wallet_1.address
         ),
@@ -14414,16 +14414,15 @@ export async function testMaxParticipants() {
         Tx.contractCall("miamipool", "mine", [types.uint(1)], wallet_1.address),
         Tx.contractCall(
           "miamipool",
-          "get-round-status",
+          "get-round-and-status",
           [types.uint(1)],
           wallet_1.address
         ),
-        Tx.contractCall("miamipool", "get-stx-balance", [], wallet_1.address),
+        // Tx.contractCall("miamipool", "get-stx-balance", [], wallet_1.address),
       ]);
 
       console.log("MINE FUNCTION: " + block.receipts[0].result);
       console.log("ROUND STATUS" + block.receipts[1].result);
-      console.log("STX BALANCE AFTER MINING " + block.receipts[2].result);
 
       // skip 250 blocks to make every block claimable
       for (let i = 0; i < 250; i++) {
@@ -15333,13 +15332,13 @@ export async function testMaxParticipants() {
         ),
         Tx.contractCall(
           "miamipool",
-          "get-round",
+          "get-round-and-status",
           [types.uint(1)],
           wallet_1.address
         ),
         Tx.contractCall(
           "miamipool",
-          "get-round-status",
+          "get-round-and-status",
           [types.uint(1)],
           wallet_1.address
         ),
@@ -16183,7 +16182,7 @@ export async function testMaxParticipants() {
 
         Tx.contractCall(
           "miamipool",
-          "get-round-status",
+          "get-round-and-status",
           [types.uint(1)],
           wallet_1.address
         ),
@@ -16202,9 +16201,9 @@ export async function testMaxParticipants() {
       for (let i = 1; i <= 70; i++) {
         console.log("Payout attempt : " + i + " " + block.receipts[i].result);
       }
-      console.log(
-        "get-round-many " + block.receipts[block.receipts.length - 3].result
-      );
+      // console.log(
+      //   "get-round-many " + block.receipts[block.receipts.length - 3].result
+      // );
     },
   });
 }
