@@ -15,9 +15,9 @@ const NavLinks = () => {
 <div className={styles.links}>
 
 <ul>
-<li>Docs</li>
-<li><a href="https://github.com/syvita/miamipool">Github</a></li>
-<li>Discord</li>
+<li><a href="https://www.craft.do/s/j2QyMYbjo0B4Xo" target="_blank" rel="noopener noreferrer">Docs</a></li>
+<li><a href="https://github.com/syvita/miamipool" target="_blank" rel="noopener noreferrer">Github</a></li>
+<li><a href="https://discord.gg/hgrHcTs9YA" target="_blank" rel="noopener noreferrer">Discord</a></li>
 {userSession.isUserSignedIn() &&
 <li><button className={styles.signOutButton} onClick={handleSignOut}> Sign Out</button></li>
 }

@@ -7,6 +7,7 @@ import { useAtom } from 'jotai'
 import { StacksMainnet } from '@stacks/network'
 const Navbar = () => {
 
+const { handleOpenAuth } = useConnect()
 const { handleSignOut } = useConnect()
 const [userSession] = useAtom(userSessionState)   
 
@@ -22,12 +23,15 @@ const [userSession] = useAtom(userSessionState)
 </div>
 
 <ul className={styles.links}>
-<li>Docs</li>
-<li><a href='https://github.com/syvita/miamipool'>Github</a></li>
-<li>Discord</li>
-{userSession.isUserSignedIn() &&
-<li><button className={styles.signOutButton} onClick={handleSignOut}> Sign Out</button></li>
-}
+    <li><a href="https://www.craft.do/s/j2QyMYbjo0B4Xo" target="_blank" rel="noopener noreferrer">Docs</a></li>
+    <li><a href="https://github.com/syvita/miamipool" target="_blank" rel="noopener noreferrer">Github</a></li>
+    <li><a href="https://discord.gg/hgrHcTs9YA" target="_blank" rel="noopener noreferrer">Discord</a></li>
+    {userSession.isUserSignedIn() &&
+        <li><button className={styles.signOutButton} onClick={handleSignOut}> Sign Out</button></li>
+    }
+    {!userSession.isUserSignedIn() &&
+        <li><button className={styles.signOutButton} onClick={handleOpenAuth}> Sign In</button></li>
+    }
 
 </ul>
 

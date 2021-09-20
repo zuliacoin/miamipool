@@ -36,7 +36,7 @@ export const useConnect = () => {
             senderAddress: GENESIS_CONTRACT_ADDRESS,
         })
         currentRoundId = await parseInt(currentRoundId.value.value)
-        Router.push('/' + currentRoundId)
+        // Router.reload()
     }
 
     const authOptions = {
@@ -44,12 +44,10 @@ export const useConnect = () => {
         userSession, // usersession is already in state, provide it here
         redirectTo: '/',
         appDetails: {
-            name: 'MiamiCoin',
+            name: 'MiamiPool',
             icon: 'https://x.syvita.org/miamicoin.svg',
         },
     }
-
-
 
     const handleOpenAuth = () => {
         showConnect(authOptions)

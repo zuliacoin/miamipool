@@ -1,57 +1,266 @@
 @import url('https://x.syvita.org/fonts/roobert/importme.css');
 @import url('https://x.syvita.org/fonts/inter/importme.css');
 
-.joinPool {
-    color: black;
-    display: flex;
+
+
+
+.currentBlock {
     text-align: center;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-top: 50px;
-    min-width: 250px;
+    font-size: xx-large;
 }
 
-.joinPool h1 {
-    font-weight: normal;
+.border {
+    display: none;
 }
 
-.snippet {
-    margin: auto;
+.roundHistory {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    padding: 12px 16px;
+    background: #FFFFFF;
     font-size: x-large;
-    margin-top: 200px;
-    color: #ffffff;
-    width: 600px;
+    margin:auto;
+    max-width: 95vw;
+    border-radius: 20px;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 15px;
 }
 
-@media (max-width: 650px) {
-    .snippet {
-        margin-top: 150px;
-        font-size: x-large;
-        width: 85%;
-    }
+.roundHistory div{
+    margin-right: 25px;
+    padding-right: 1rem;
+    min-width: 200px;
 }
 
-@media(max-width: 550px) {
-    .snippet {
-        margin-top: 80px;
-        font-size: x-large;
-        width: 85%
-    }
+.roundId {
+   font-size: 3rem;
+   line-height: 0;
+   border-right: 1px solid #9A9A9A;
 }
 
-@media (max-width: 411px) {
-     .snippet {
-        margin-top: 80px;
-        font-size: x-large;
-        width: 85%;
-    }
+.blockHeight {
+    font-size: 1.5rem;
+    text-align: center;
 }
 
-@media (max-width: 370px) {
-    .snippet {
-        margin-top: -20px;
-        font-size: x-large;
-        width: 85%;
-    }
+.totalStx {
+    line-height: 1;
+    border-right: 1px solid #9A9A9A;
+}
+
+.addWithdraw {
+    border-right: 1px solid #9A9A9A;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.addWithdraw input {
+    font-size: medium;
+    margin-bottom: 3px;
+    margin-top: 0px;
+    max-width: 90%;
+}
+
+.addWithdraw button {
+    background-color: #00FAFA;
+    height: 5px;
+    margin-top: 0px;
+    line-height: 0.4;
+    max-width: 90%;
+    font-size: x-small;
+    margin-bottom: 5px;
+}
+
+.participants {
+    line-height: 1;
+    border-right: 1px solid #9A9A9A;
+    height: 120px;
+}
+
+
+.raising {
+    line-height: 3;
+    border-right: 1px solid #9A9A9A;
+}
+
+.miningStarts {
+    margin-top: 0px;
+}
+
+
+.mining {
+    line-height: 3;
+    border-right: 1px solid #9A9A9A;
+}
+
+.mineLength {
+    line-height: 3;
+    border-right: 1px solid #9A9A9A;
+}
+
+.claiming {
+    line-height: 3;
+    border-right: 1px solid #9A9A9A;
+}
+
+.winningBlocks {
+    line-height: 3;
+    border-right: 1px solid #9A9A9A;
+}
+
+.paying {
+    line-height: 3;
+    border-right: 1px solid #9A9A9A;
+}
+
+.payoutMia {
+    line-height: 3;
+    border-right: 1px solid #9A9A9A;
+}
+
+.complete {
+    line-height: 3;
+    border-right: 1px solid #9A9A9A;
+}
+
+.viewTransaction {
+    font-size: small;
+    text-decoration: underline;
+}
+
+@media(max-width: 1750px) {
+    .payoutMia {
+    line-height: 1;
+    height: 120px;
+    border-right: 1px solid #9A9A9A;
+}
+
+.payoutMia p{
+    margin-top: 40px;
+}
+} 
+
+
+@media(max-width: 1300px) {
+.roundHistory {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    padding: 12px 16px;
+    background: #FFFFFF;
+    font-size: x-large;
+    margin:auto;
+    max-width: 60vw;
+    border-radius: 20px;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 20px;
+
+
+}
+
+.roundHistory div {
+    margin-right: 0px;
+    padding-right: 0rem;
+}
+
+
+.roundId {
+   font-size: 3rem;
+   line-height: 0;
+   border-right: 0;
+}
+
+.totalStx {
+    line-height: 0;
+    border-right: 0;
+}
+
+.addWithdraw {
+    border-right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.addWithdraw button {
+    background-color: #00FAFA;
+    height: 5px;
+    margin-top: 5px;
+    line-height: 0.4;
+    max-width: 90%;
+    font-size: small;
+}
+
+.participants {
+    line-height: 0;
+    border-right: 0;
+}
+
+.border {
+    border: 1px solid #9A9A9A;
+    width: 275px;
+    display: inline-block;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.raising {
+    line-height: 0;
+    border-right: 0;
+   
+}
+
+.payoutMia {
+    line-height: 0;
+    border-right: 0;
+    height: 100px;
+}
+
+.mineLength {
+    line-height: 0;
+    border-right: 0;
+}
+
+.mining {
+    line-height: 0;
+    border-right: 0;
+}
+
+.winningBlocks {
+    border-right: 0;
+    line-height: 0;
+}
+.claiming {
+    line-height: 0;
+    border-right: 0;
+
+}
+
+.paying {
+    line-height: 0;
+    border-right: 0;
+
+}
+
+.complete {
+    line-height: 0;
+    border-right: 0;
+
+}
+
+
+
+}
+
+
+@media(max-width:500px) {
+    .roundHistory {
+    max-width: fit-content;
+}
+
+
 }

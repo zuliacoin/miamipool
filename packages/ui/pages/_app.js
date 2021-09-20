@@ -21,13 +21,12 @@ function MyApp({ Component, pageProps }) {
     }, [userSession, setUserData])
 
     Router.events.on('routeChangeStart', (url) => {
-        console.log('ROUTE IS CHANGING...')
         setLoading(true)
     })
     Router.events.on('routeChangeComplete', (url) => {
-        console.log('ROUTE CHANGING IS COMPLETE...')
         setLoading(false)
     })
+    
     return (
         <Connect authOptions={authOptions}>
             {loading && <Loader />}
