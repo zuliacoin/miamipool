@@ -36,7 +36,7 @@ export default function Home() {
     let STXAddress = ''
 
     if (userSession.isUserSignedIn()) {
-        STXAddress = userSession.loadUserData().profile.stxAddress.testnet
+        STXAddress = userSession.loadUserData().profile.stxAddress.mainnet
     }
 
     const roundHistory = []
@@ -242,7 +242,7 @@ export default function Home() {
                                 
                         </div>
                             {txId && <p className = {styles.viewTransaction}> <a 
-                                    href={`https://explorer.syvita.org/txid/${txId}?chain=testnet`}
+                                    href={`https://explorer.syvita.org/txid/${txId}?chain=mainnet`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >

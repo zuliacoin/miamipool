@@ -24,7 +24,7 @@ const Transaction = ({ txId }) => {
             image = '/tx-status/pending.svg'
     }
 
-    const explorer_url = `https://explorer.stacks.co/txid/${txId}?chain=testnet}`
+    const explorer_url = `https://explorer.stacks.co/txid/${txId}?chain=mainnet}`
     return (
         <div className={styles.transaction}>
             <img src={image} height="66px" width="66px" alt="Cycles" />
