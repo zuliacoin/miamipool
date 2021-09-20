@@ -591,6 +591,14 @@
     (ok (var-get lastKnownRoundId))
 )
 
+(define-read-only (get-round (id uint))
+    (ok (unwrap! (map-get? Rounds {id: id}) (err ERR_ROUND_NOT_FOUND)))
+)
+
+(define-read-only (get-round-status (id uint))
+    (ok (unwrap! (map-get? RoundsStatus { id: id }) (err ERR_ROUND_NOT_FOUND)))
+)
+
 (define-read-only (get-round-and-status (id uint))
     (ok
         {
