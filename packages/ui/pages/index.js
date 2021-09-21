@@ -289,7 +289,7 @@ export default function Home() {
                         </div>
                         
                         <div className={styles.totalStx}>
-                            <p>{roundData[i].totalStx.toLocaleString()} STX</p>
+                            <p>{Math.floor(roundData[i].totalStx).toLocaleString()} STX</p>
                             <p>{(roundData[i].totalStx / 150).toFixed(1).toLocaleString()} STX / block</p>
                             <div className={styles.border}></div>
                         </div>
