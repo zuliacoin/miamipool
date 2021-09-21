@@ -19,7 +19,7 @@ export async function handleCron(event: ScheduledEvent): Promise<Response> {
     console.log('Attempting mine...')
     const result = await mine(currentRound)
     console.log('Sent mining TX')
-    console.log(`TXID: 0x${result}`)
+    console.log(`TX: ${JSON.stringify(result)}`)
     return new Response()
   }
 
@@ -48,19 +48,19 @@ export async function handleCron(event: ScheduledEvent): Promise<Response> {
       console.log('Attempting mine...')
       const result = await mine(round)
       console.log('Sent mining TX')
-      console.log(`TXID: 0x${result}`)
+      console.log(`TX: ${JSON.stringify(result)}`)
     } else {
       if (!hasClaimed && canClaimBlock(nextBlockToCheck)) {
         console.log(`Attempting claim on block ${nextBlockToCheck}...`)
         const result = await claim(round)
         console.log('Sent mining TX')
-        console.log(`TXID: 0x${result}`)
+        console.log(`TX: ${JSON.stringify(result)}`)
       } else {
         if (!hasPaidOut) {
           console.log('Attempting payout...')
           const result = await payout(round)
           console.log('Sent payout TX')
-          console.log(`TXID: 0x${result}`)
+          console.log(`TX: ${JSON.stringify(result)}`)
         } else {
           console.log('Doing nothing.')
         }

@@ -11,9 +11,7 @@ export function getDefaultTxOptions(args: any, functionName: string) {
     functionName: functionName,
     functionArgs: args,
     // @ts-ignore - PRIVATE_KEY is set as a encrypted secret
-    //senderKey: PRIVATE_KEY, change when we release
-    senderKey:
-      'decb2c71d6fb861c8e88764605968cfd70d60b25201bc31ba62e6689f1ec020901',
+    senderKey: PRIVATE_KEY,
     validateWithAbi: true,
     network: NETWORK,
     anchorMode: AnchorMode.Any,
