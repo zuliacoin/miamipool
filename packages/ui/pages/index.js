@@ -260,7 +260,7 @@ export default function Home() {
                     status = <div className={styles.mining}><p>MINING</p><div className={styles.border}></div></div>
                     style = { border: '6px solid #FFCA5F' }
                     mineLength = <div className={styles.mineLength}><p>Mining {ROUND_LEN} blocks</p><div className={styles.border}></div></div>
-                    claimingCanBegin = <div className={styles.claimingCanBegin}><p>Claiming starts in {(roundData[i].lastBlockToCheck - currentBlockHeight) + MATURITY_LEN} blocks</p></div>
+                    claimingCanBegin = <div className={styles.claimingCanBegin}><p>Claiming starts in {(roundData[i].nextBlockToCheck - currentBlockHeight) + MATURITY_LEN} blocks</p></div>
                 } else if (((roundData[i].lastBlockToCheck - roundData[i].nextBlockToCheck) < (ROUND_LEN - 1)) && (roundData[i].nextBlockToCheck <= roundData[i].lastBlockToCheck)) {
                     status = <div className={styles.claiming}><p>CLAIMING</p></div>
                     style = { border: '6px solid #bfabff' }
