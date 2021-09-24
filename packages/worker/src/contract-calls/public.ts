@@ -1,4 +1,4 @@
-import { TxBroadcastResult } from '@syvita/micro-stacks/transactions'
+import { TxBroadcastResult } from 'micro-stacks/transactions'
 import { sendToMiamiPool } from '../lib'
 
 export async function mine(roundId: number): Promise<TxBroadcastResult> {

@@ -8,5 +8,7 @@
   "scripts": {
     "lint": "yarn prettier --write ."
   },
-  "dependencies": {}
+  "dependencies": {
+    "@geist-ui/react": "^2.2.0"
+  }
 }

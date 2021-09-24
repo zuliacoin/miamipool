@@ -2,8 +2,8 @@ import {
   makeContractCall,
   broadcastTransaction,
   TxBroadcastResult,
-} from '@syvita/micro-stacks/transactions'
-import { uintCV } from '@syvita/micro-stacks/clarity'
+} from 'micro-stacks/transactions'
+import { uintCV } from 'micro-stacks/clarity'
 import { getDefaultTxOptions, NETWORK } from '.'
 
 export async function sendToMiamiPool(

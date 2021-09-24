@@ -1,4 +1,4 @@
-import { StacksTestnet, StacksMainnet } from '@syvita/micro-stacks/network'
+import { StacksTestnet, StacksMainnet } from 'micro-stacks/network'
 
 // ========================================================================== //
 

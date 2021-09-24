@@ -25,7 +25,10 @@ export async function handleCron(event: ScheduledEvent): Promise<Response> {
 
   const rounds = await getIncompleteRounds()
 
-  if (rounds == [-1]) {
+  console.log(`ROUNDS: ${rounds}`)
+
+  // @ts-ignore
+  if (rounds == -1) {
     console.log('No incomplete rounds to operate on.')
     return new Response()
   }

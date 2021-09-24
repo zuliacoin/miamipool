@@ -1,7 +1,4 @@
-import {
-  AnchorMode,
-  PostConditionMode,
-} from '@syvita/micro-stacks/transactions'
+import { AnchorMode, PostConditionMode } from 'micro-stacks/transactions'
 import { MIAMIPOOL_ADDY, MIAMIPOOL_NAME, NETWORK } from '.'
 
 export function getDefaultTxOptions(args: any, functionName: string) {
@@ -10,12 +7,15 @@ export function getDefaultTxOptions(args: any, functionName: string) {
     contractName: MIAMIPOOL_NAME,
     functionName: functionName,
     functionArgs: args,
-    // @ts-ignore - PRIVATE_KEY is set as a encrypted secret
-    senderKey: PRIVATE_KEY,
+    senderKey:
+      // @ts-ignore - PRIVATE_KEY is set as a encrypted secret
+      PRIVATE_KEY ||
+      '<put_priv_key_here>',
     validateWithAbi: true,
     network: NETWORK,
     anchorMode: AnchorMode.Any,
     postConditionMode: PostConditionMode.Allow,
+    fee: 10000n,
   }
 }
 
