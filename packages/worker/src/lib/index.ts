@@ -1,4 +1,4 @@
-import { StacksTestnet, StacksMainnet } from 'micro-stacks/network'
+import { StacksMainnet } from 'micro-stacks/network'
 
 // ========================================================================== //
 

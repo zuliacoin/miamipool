@@ -1,5 +1,5 @@
 import { callReadOnlyFunction } from 'micro-stacks/transactions'
-import { API_SERVER, getReadonlyTxOptions } from '../lib'
+import { API_SERVER, getDefaultTxOptions, getReadonlyTxOptions } from '../lib'
 import { ClarityType, uintCV } from 'micro-stacks/clarity'
 
 export async function getRoundStatus(roundId: number): Promise<{
@@ -7,6 +7,8 @@ export async function getRoundStatus(roundId: number): Promise<{
   hasClaimed: boolean
   hasPaidOut: boolean
   nextBlockToCheck: number
+  lastBlockToCheck: number
+  requiredPayouts: number
 }> {
   const options = getReadonlyTxOptions([uintCV(roundId)], 'get-round-status')
   const result = await callReadOnlyFunction(options)
@@ -18,6 +20,8 @@ export async function getRoundStatus(roundId: number): Promise<{
     hasClaimed: data.hasClaimed.type == ClarityType.BoolTrue,
     hasPaidOut: data.hasPaidOut.type == ClarityType.BoolTrue,
     nextBlockToCheck: parseInt(data.nextBlockToCheck.value),
+    lastBlockToCheck: parseInt(data.lastBlockToCheck.value),
+    requiredPayouts: parseInt(data.requiredPayouts.value),
   }
 }
 
@@ -64,6 +68,13 @@ export async function getRoundStart(roundId: number): Promise<number> {
   const data = result.value.data
 
   return parseInt(data.blockHeight.value)
+}
+
+export async function getRound(roundId: number) {
+  const options = getReadonlyTxOptions([uintCV(roundId)], 'get-round')
+  const result = await callReadOnlyFunction(options)
+  // @ts-ignore
+  return result.value.data
 }
 
 export async function getCurrentBlock(): Promise<number> {

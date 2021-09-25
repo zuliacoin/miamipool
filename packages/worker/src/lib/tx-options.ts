@@ -9,8 +9,7 @@ export function getDefaultTxOptions(args: any, functionName: string) {
     functionArgs: args,
     senderKey:
       // @ts-ignore - PRIVATE_KEY is set as a encrypted secret
-      PRIVATE_KEY ||
-      '<put_priv_key_here>',
+      PRIVATE_KEY || '<put_priv_key_here>',
     validateWithAbi: true,
     network: NETWORK,
     anchorMode: AnchorMode.Any,
