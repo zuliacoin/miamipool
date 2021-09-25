@@ -124,12 +124,24 @@ async function handleDataRefresh(): Promise<Response> {
     await KV.put('lastCachedRound', roundId.toString())
   } else if (parseInt(lastCachedRound) == currentRound) {
     console.log(
-      `Last cached round (${lastCachedRound}) is current round. Revalidating round ${currentRound}.`
+      `Last cached round (${lastCachedRound}) is current round. Revalidating last 5 rounds (${
+        currentRound - 4
+      }-${currentRound}).`
     )
-    await KV.put(
-      `round-${currentRound}`,
-      await constructRoundValue(currentRound)
-    )
+    let workingRound = currentRound - 4
+
+    while (workingRound < currentRound) {
+      if (workingRound == 0) {
+        workingRound++
+      } else {
+        await KV.put(
+          `round-${workingRound}`,
+          await constructRoundValue(workingRound)
+        )
+        console.log(`Revalidated round ${workingRound}`)
+        workingRound++
+      }
+    }
   }
   return new Response()
 }
