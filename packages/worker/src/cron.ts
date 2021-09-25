@@ -24,7 +24,7 @@ import {
 
 export async function handleCron(event: ScheduledEvent): Promise<Response> {
   // @ts-ignore - cron does exist it's just tsc is dumb
-  if (event.cron === '* * * * *') {
+  if (event.cron === '*/2 * * * *') {
     // do API data update stuff
     return await handleDataRefresh()
   } else {
