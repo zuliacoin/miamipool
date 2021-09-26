@@ -130,7 +130,7 @@ async function handleDataRefresh(): Promise<Response> {
     )
     let workingRound = currentRound - 4
 
-    while (workingRound < currentRound) {
+    while (workingRound <= currentRound) {
       if (workingRound == 0) {
         workingRound++
       } else {
