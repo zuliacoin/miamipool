@@ -4,9 +4,9 @@
   "description": "Cloudflare worker TypeScript template",
   "main": "dist/worker.js",
   "scripts": {
-    "build": "webpack",
+    "build": "esbuild --bundle --sourcemap --outdir=dist ./src/index.js",
     "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}'",
-    "dev": "miniflare ./dist/worker.js --watch --debug",
+    "dev": "miniflare ./dist/index.js --watch --debug",
     "deploy": "wrangler publish"
   },
   "author": "author",
@@ -24,6 +24,7 @@
     "@types/service-worker-mock": "^2.0.1",
     "@typescript-eslint/eslint-plugin": "^4.16.1",
     "@typescript-eslint/parser": "^4.16.1",
+    "esbuild": "^0.13.2",
     "jest": "^27.0.1",
     "miniflare": "^1.4.1",
     "prettier": "^2.3.0",
@@ -42,5 +43,8 @@
     "micro-stacks": "^0.0.30",
     "stream-browserify": "^3.0.0",
     "url": "^0.11.0"
+  },
+  "browser": {
+    "crypto": false
   }
 }
