@@ -44,34 +44,24 @@ export default function Home() {
     useEffect(() => {
         setIsLoading(true)
         const getRoundsInfo = async () => {
-            let currentRoundId = await callReadOnlyFunction({
-                contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
-                contractName: MIAMIPOOL_CONTRACT_NAME,
-                functionName: 'get-current-round-id',
-                functionArgs: [],
-                network: NETWORK,
-                senderAddress: GENESIS_CONTRACT_ADDRESS,
-            })
-            currentRoundId = await parseInt(currentRoundId.value.value)
-        
-            let url = `${API_SERVER}/extended/v1/block?limit=1`
-            let currentBlockHeight = await fetch(url)
-            currentBlockHeight = await currentBlockHeight.json()
-            currentBlockHeight = currentBlockHeight.results[0].height
-            
-            // let roundsList = []
+            let url = 'https://api.mine.miami/'
+
+            let res = await fetch(url + 'currentround')
+            let currentRoundId = await res.json()
+            currentRoundId = parseInt(currentRoundId.round)
+            console.log('Current round: ' + currentRoundId)
+
+            res = await fetch(url + 'currentblock')
+            let currentBlockHeight = await res.json()
+            currentBlockHeight = parseInt(currentBlockHeight.block)
+            console.log('Current Block: ' + currentBlockHeight)
+
             let roundData = [];
 
             for (let i = (currentRoundId - 20); i <= currentRoundId; i++) {
                 if (i > 0) {
-                    let data = await callReadOnlyFunction({
-                        contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
-                        contractName: MIAMIPOOL_CONTRACT_NAME,
-                        functionName: 'get-round-and-status',
-                        functionArgs: [uintCV(i)],
-                        network: NETWORK,
-                        senderAddress: GENESIS_CONTRACT_ADDRESS,
-                    })
+                    let data = await fetch(url + 'round/' + i)
+                    data = await data.json()
                     roundData.push({ roundId: i, data: data })
                 }
             }
@@ -79,32 +69,32 @@ export default function Home() {
             //     const json = JSON.stringify(roundData[0].data.value.data, (key, value) =>
             //     typeof value === 'bigint' ? value.toString() + 'n' : value
             // )
-            // console.log(json)
+            console.log(roundData)
         
             let parsedRoundData = {};
+
+            let id = 0;
+            try {
+                id = await callReadOnlyFunction({
+                    contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
+                    contractName: MIAMIPOOL_CONTRACT_NAME,
+                    functionName: 'principal-to-id',
+                    functionArgs: [standardPrincipalCV(STXAddress)],
+                    network: NETWORK,
+                    senderAddress: GENESIS_CONTRACT_ADDRESS,
+                })
+                id = parseInt(id.value.value)
+            } catch {}
         
             for (let i = 0; i < roundData.length; i++) {
-                let participantIds = []
-                for (let j = 0; j < roundData[i].data.value.data.round.data.participantIds.list.length; j++) {
-                    participantIds.push(parseInt(roundData[i].data.value.data.round.data.participantIds.list[j].value))
-                }
-                let blocksWon = []
-                for (let j = 0; j < roundData[i].data.value.data.round.data.blocksWon.list.length; j++) {
-                    blocksWon.push(parseInt(roundData[i].data.value.data.round.data.blocksWon.list[j].value))
-                }
-                let id = 0;
-                try {
-                    id = await callReadOnlyFunction({
-                        contractAddress: MIAMIPOOL_CONTRACT_ADDRESS,
-                        contractName: MIAMIPOOL_CONTRACT_NAME,
-                        functionName: 'principal-to-id',
-                        functionArgs: [standardPrincipalCV(STXAddress)],
-                        network: NETWORK,
-                        senderAddress: GENESIS_CONTRACT_ADDRESS,
-                    })
-                    id = parseInt(id.value.value)
-                } catch {}
-                
+                // let participantIds = []
+                // for (let j = 0; j < roundData[i].data.value.data.round.data.participantIds.list.length; j++) {
+                //     participantIds.push(parseInt(roundData[i].data.value.data.round.data.participantIds.list[j].value))
+                // }
+                // let blocksWon = []
+                // for (let j = 0; j < roundData[i].data.value.data.round.data.blocksWon.list.length; j++) {
+                //     blocksWon.push(parseInt(roundData[i].data.value.data.round.data.blocksWon.list[j].value))
+                // }
                 let contribution = 0;
                 if (id > 0) {
                     try {
@@ -122,17 +112,17 @@ export default function Home() {
                 }
                 
                 parsedRoundData[(i + 1)] = {
-                    totalStx: parseInt(roundData[i].data.value.data.round.data.totalStx.value) / 1000000,
-                    participantIds: participantIds,
-                    blocksWon: blocksWon,
-                    totalMiaWon: parseInt(roundData[i].data.value.data.round.data.totalMiaWon.value),
-                    blockHeight: parseInt(roundData[i].data.value.data.round.data.blockHeight.value),
-                    hasMined: roundData[i].data.value.data.roundsStatus.data.hasMined.type == ClarityType.BoolTrue,
-                    hasClaimed: roundData[i].data.value.data.roundsStatus.data.hasClaimed.type == ClarityType.BoolTrue,
-                    hasPaidOut: roundData[i].data.value.data.roundsStatus.data.hasPaidOut.type == ClarityType.BoolTrue,
-                    nextBlockToCheck: parseInt(roundData[i].data.value.data.roundsStatus.data.nextBlockToCheck.value),
-                    lastBlockToCheck: parseInt(roundData[i].data.value.data.roundsStatus.data.lastBlockToCheck.value),
-                    requiredPayouts: parseInt(roundData[i].data.value.data.roundsStatus.data.requiredPayouts.value),
+                    totalStx: parseInt(roundData[i].data.totalStx) / 1000000,
+                    participantIds: roundData[i].data.participantIds,
+                    blocksWon: roundData[i].data.blocksWon,
+                    totalMiaWon: parseInt(roundData[i].data.totalMiaWon),
+                    blockHeight: parseInt(roundData[i].data.blockHeight),
+                    hasMined: roundData[i].data.hasMined,
+                    hasClaimed: roundData[i].data.hasClaimed,
+                    hasPaidOut: roundData[i].data.hasPaidOut,
+                    nextBlockToCheck: parseInt(roundData[i].data.nextBlockToCheck),
+                    lastBlockToCheck: parseInt(roundData[i].data.lastBlockToCheck),
+                    requiredPayouts: parseInt(roundData[i].data.requiredPayouts),
                     contribution: contribution / 1000000,
                 }
             }
