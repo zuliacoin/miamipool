@@ -4,7 +4,9 @@ import { Router } from 'itty-router'
 const router = Router()
 
 router.get('/', () => {
-  return new Response('eth small pp. bitcoin big pp. big, big pp')
+  return new Response('eth small pp. bitcoin big pp. big, big pp', {
+    headers: { 'Access-Control-Allow-Origin': '*' },
+  })
 })
 
 router.get('/currentround', async () => {
@@ -14,7 +16,10 @@ router.get('/currentround', async () => {
   return new Response(
     JSON.stringify({
       round: currentRound,
-    })
+    }),
+    {
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    }
   )
 })
 
@@ -25,19 +30,28 @@ router.get('/currentblock', async () => {
   return new Response(
     JSON.stringify({
       block: currentBlock,
-    })
+    }),
+    {
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    }
   )
 })
 
 router.get('/round/:id', async ({ params }) => {
   // @ts-ignore
-  return new Response(await KV.get(`round-${params.id}`))
+  return new Response(await KV.get(`round-${params.id}`), {
+    headers: { 'Access-Control-Allow-Origin': '*' },
+  })
 })
 
 // 404 for everything else
 router.all(
   '*',
-  () => new Response("uh, nope. couldn't find that.", { status: 404 })
+  () =>
+    new Response("uh, nope. couldn't find that.", {
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      status: 404,
+    })
 )
 
 addEventListener('fetch', (event) =>

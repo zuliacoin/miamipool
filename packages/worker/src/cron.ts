@@ -1,8 +1,3 @@
-import { ClarityType, ClarityValue, uintCV } from 'micro-stacks/clarity'
-import {
-  callReadOnlyFunction,
-  pubKeyfromPrivKey,
-} from 'micro-stacks/transactions'
 import {
   mine,
   claim,
@@ -13,14 +8,7 @@ import {
   getIncompleteRounds,
   getRound,
 } from './contract-calls'
-import {
-  API_SERVER,
-  canClaimBlock,
-  isRoundExpired,
-  MIAMIPOOL_ADDY,
-  MIAMIPOOL_NAME,
-  NETWORK,
-} from './lib'
+import { canClaimBlock, isRoundExpired } from './lib'
 
 export async function handleCron(event: ScheduledEvent): Promise<Response> {
   // @ts-ignore - cron does exist it's just tsc is dumb

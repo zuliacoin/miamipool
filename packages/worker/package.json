@@ -7,7 +7,8 @@
     "build": "esbuild --bundle --sourcemap --outdir=dist ./src/index.js",
     "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}'",
     "dev": "miniflare ./dist/index.js --watch --debug",
-    "deploy": "wrangler publish"
+    "deploy": "wrangler publish",
+    "test": "yarn build && ava --verbose test/*.spec.js"
   },
   "author": "author",
   "license": "MIT OR Apache-2.0",
@@ -18,12 +19,14 @@
       "prettier"
     ]
   },
+  "type": "module",
   "devDependencies": {
     "@cloudflare/workers-types": "^2.2.2",
     "@types/jest": "^26.0.23",
     "@types/service-worker-mock": "^2.0.1",
     "@typescript-eslint/eslint-plugin": "^4.16.1",
     "@typescript-eslint/parser": "^4.16.1",
+    "ava": "^3.15.0",
     "esbuild": "^0.13.2",
     "jest": "^27.0.1",
     "miniflare": "^1.4.1",
