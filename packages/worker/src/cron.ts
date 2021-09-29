@@ -33,6 +33,12 @@ async function handleBot(): Promise<Response> {
     const result = await mine(currentRound)
     console.log('Sent mining TX')
     console.log(`TX: ${JSON.stringify(result)}`)
+    console.log('TYPE OF RESPONSE = ' + typeof result)
+    if (typeof result != 'string') {
+      let nonce = await KV.get('nonce')
+      await KV.put('nonce', (parseInt(nonce) - 1).toString())
+      console.log('ERR, DECREASING NONCE')
+    }
     return new Response()
   }
 
@@ -65,18 +71,36 @@ async function handleBot(): Promise<Response> {
       const result = await mine(round)
       console.log('Sent mining TX')
       console.log(`TX: ${JSON.stringify(result)}`)
+      console.log('TYPE OF RESPONSE = ' + typeof result)
+      if (typeof result != 'string') {
+        let nonce = await KV.get('nonce')
+        await KV.put('nonce', (parseInt(nonce) - 1).toString())
+        console.log('ERR, DECREASING NONCE')
+      }
     } else {
       if (!hasClaimed && canClaimBlock(nextBlockToCheck)) {
         console.log(`Attempting claim on block ${nextBlockToCheck}...`)
         const result = await claim(round)
-        console.log('Sent mining TX')
+        console.log('Sent claiming TX')
         console.log(`TX: ${JSON.stringify(result)}`)
+        console.log('TYPE OF RESPONSE = ' + typeof result)
+        if (typeof result != 'string') {
+          let nonce = await KV.get('nonce')
+          await KV.put('nonce', (parseInt(nonce) - 1).toString())
+          console.log('ERR, DECREASING NONCE')
+        }
       } else {
         if (!hasPaidOut) {
           console.log('Attempting payout...')
           const result = await payout(round)
           console.log('Sent payout TX')
           console.log(`TX: ${JSON.stringify(result)}`)
+          console.log('TYPE OF RESPONSE = ' + typeof result)
+          if (typeof result != 'string') {
+            let nonce = await KV.get('nonce')
+            await KV.put('nonce', (parseInt(nonce) - 1).toString())
+            console.log('ERR, DECREASING NONCE')
+          }
         } else {
           console.log('Doing nothing.')
         }

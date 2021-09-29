@@ -13,7 +13,18 @@ export function getAccounts() {
   }
 }
 
-export function getDefaultTxOptions(args: any, functionName: string) {
+export async function getDefaultTxOptions(args: any, functionName: string) {
+  let nonce = await KV.get('nonce')
+
+  if (nonce == null) {
+    await KV.put('nonce', '0')
+    nonce = 0
+  } else {
+    await KV.put('nonce', (parseInt(nonce) + 1).toString())
+  }
+
+  console.log('NONCE IN TX: ' + nonce)
+
   return {
     contractAddress: MIAMIPOOL_ADDY,
     contractName: MIAMIPOOL_NAME,
@@ -21,12 +32,13 @@ export function getDefaultTxOptions(args: any, functionName: string) {
     functionArgs: args,
     senderKey:
       // @ts-ignore - PRIVATE_KEY is set as a encrypted secret
-      PRIVATE_KEY || '<put_priv_key_here>',
+      '453fe49069fae3f3f6a37f4e29f33d2ff8cee98a4ea736951f7ea4b9bd65788001',
     validateWithAbi: true,
     network: NETWORK,
     anchorMode: AnchorMode.Any,
     postConditionMode: PostConditionMode.Allow,
-    fee: 10000n,
+    fee: 50000n,
+    nonce: nonce,
   }
 }
 
