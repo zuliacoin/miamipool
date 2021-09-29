@@ -10,7 +10,7 @@ export async function sendToMiamiPool(
   functionName: string,
   roundId: number
 ): Promise<TxBroadcastResult> {
-  const txOptions = getDefaultTxOptions([uintCV(roundId)], functionName)
+  const txOptions = await getDefaultTxOptions([uintCV(roundId)], functionName)
   const transaction = await makeContractCall(txOptions)
   const broadcastResponse = await broadcastTransaction(transaction, NETWORK)
   return broadcastResponse

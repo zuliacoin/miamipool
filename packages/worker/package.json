@@ -4,7 +4,7 @@
   "description": "Cloudflare worker TypeScript template",
   "main": "dist/worker.js",
   "scripts": {
-    "build": "esbuild --bundle --sourcemap --minify --outfile=dist/worker.js ./src/index.js",
+    "build": "esbuild --bundle --sourcemap --outfile=dist/worker.js ./src/index.js",
     "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}'",
     "dev": "miniflare ./dist/index.js --watch --debug",
     "deploy": "wrangler publish",

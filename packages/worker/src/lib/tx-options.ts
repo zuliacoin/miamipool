@@ -32,7 +32,8 @@ export async function getDefaultTxOptions(args: any, functionName: string) {
     functionArgs: args,
     senderKey:
       // @ts-ignore - PRIVATE_KEY is set as a encrypted secret
-      '453fe49069fae3f3f6a37f4e29f33d2ff8cee98a4ea736951f7ea4b9bd65788001',
+      PRIVATE_KEY,
+    //'453fe49069fae3f3f6a37f4e29f33d2ff8cee98a4ea736951f7ea4b9bd65788001',
     validateWithAbi: true,
     network: NETWORK,
     anchorMode: AnchorMode.Any,
